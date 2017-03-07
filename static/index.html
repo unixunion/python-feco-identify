@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="/static/css/materialize.min.css"  media="screen,projection"/>
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+
+<body>
+
+<div class="row">
+    <form class="col s12">
+
+        <div class="row">
+            <div class="input-field col s4">
+                <input id="fe" type="text" class="validate">
+                <label for="fe">Ferrous</label>
+            </div>
+            <div class="input-field col s4">
+                <input id="co" type="text" class="validate">
+                <label for="co">Conductivity</label>
+            </div>
+             <div class="input-field col s4">
+                <input id="id" type="text" class="validate">
+                <label for="id">Id</label>
+            </div>
+        </div>
+        <div class="row">
+            <a class="waves-effect waves-light btn" id="guess">Guess</a>
+            <a class="waves-effect waves-light btn" id="record">Record</a>
+        </div>
+
+    </form>
+</div>
+
+    <!--Import jQuery before materialize.js-->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="/static/js/materialize.min.js"></script>
+
+    <script type="text/javascript">
+    $(document).ready(function() {
+
+        // vars
+        var fe;
+        var co;
+        var id;
+        var button;
+
+        var postJSON = function(url, callback) {
+            return jQuery.ajax({
+                'type': 'POST',
+                'url': url,
+                'contentType': 'application/json',
+                'data': JSON.stringify({
+                    "fe": fe,
+                    "co": co,
+                    "id": id,
+                    "button": button
+                }),
+                'dataType': 'json',
+                'success': callback
+            });
+        };
+
+        document.getElementById("fe").addEventListener("change", function(data) {
+            console.log(data.target.value);
+            fe = data.target.value;
+        }, false);
+
+        document.getElementById("co").addEventListener("change", function(data) {
+            console.log(data.target.value);
+            co = data.target.value;
+        }, false);
+
+        document.getElementById("id").addEventListener("change", function(data) {
+            console.log(data.target.value);
+            id = data.target.value;
+        }, false);
+
+        document.getElementById("guess").addEventListener("click", function(data) {
+            console.log("guess");
+            button='guess';
+            postJSON("", function(data, status){
+                console.log(data);
+                button=null;
+                Materialize.toast(data['result'], 4000);
+            });
+        }, false);
+
+        document.getElementById("record").addEventListener("click", function(data) {
+            console.log("record");
+            button='record';
+
+            postJSON("", function(data, status){
+                console.log(data);
+                button=null;
+            });
+
+        }, false);
+
+
+    });
+    </script>
+
+</body>
+</html>

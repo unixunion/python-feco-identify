@@ -1,0 +1,1 @@
+CREATE TABLE feco (fe INT, co INT, id VARCHAR(255));
