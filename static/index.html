@@ -24,14 +24,25 @@
                 <input id="co" type="text" class="validate">
                 <label for="co">Conductivity</label>
             </div>
-             <div class="input-field col s4">
+            <div class="input-field col s4">
+                <input id="depth" type="text" class="validate">
+                <label for="depth">Depth</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-field col s6">
                 <input id="id" type="text" class="validate">
-                <label for="id">Id</label>
+                <label for="id">Name</label>
+            </div>
+            <div class="input-field col s6">
+                <input id="category" type="text" class="validate">
+                <label for="category">Category</label>
             </div>
         </div>
         <div class="row">
             <a class="waves-effect waves-light btn" id="guess">Guess</a>
             <a class="waves-effect waves-light btn" id="record">Record</a>
+            <a class="waves-effect waves-light btn" id="retrain">Retrain</a>
         </div>
 
     </form>
@@ -45,21 +56,26 @@
     $(document).ready(function() {
 
         // vars
-        var fe;
-        var co;
-        var id;
-        var button;
+        var vfe;
+        var vco;
+        var vdepth;
+        var vid;
+        var vcategory;
+        var vbutton;
 
         var postJSON = function(url, callback) {
+
             return jQuery.ajax({
                 'type': 'POST',
                 'url': url,
                 'contentType': 'application/json',
                 'data': JSON.stringify({
-                    "fe": fe,
-                    "co": co,
-                    "id": id,
-                    "button": button
+                    "fe": vfe,
+                    "co": vco,
+                    "depth": vdepth,
+                    "id": vid,
+                    "category": vcategory,
+                    "button": vbutton
                 }),
                 'dataType': 'json',
                 'success': callback
@@ -68,36 +84,47 @@
 
         document.getElementById("fe").addEventListener("change", function(data) {
             console.log(data.target.value);
-            fe = data.target.value;
+            vfe = data.target.value;
         }, false);
 
         document.getElementById("co").addEventListener("change", function(data) {
             console.log(data.target.value);
-            co = data.target.value;
+            vco = data.target.value;
+        }, false);
+
+        document.getElementById("depth").addEventListener("change", function(data) {
+            console.log(data.target.value);
+            vdepth = data.target.value;
         }, false);
 
         document.getElementById("id").addEventListener("change", function(data) {
             console.log(data.target.value);
-            id = data.target.value;
+            vid = data.target.value;
+        }, false);
+
+        document.getElementById("category").addEventListener("change", function(data) {
+            console.log(data.target.value);
+            vcategory = data.target.value;
         }, false);
 
         document.getElementById("guess").addEventListener("click", function(data) {
             console.log("guess");
-            button='guess';
+            vbutton='guess';
             postJSON("", function(data, status){
                 console.log(data);
-                button=null;
+                vbutton=null;
                 Materialize.toast(data['result'], 4000);
             });
         }, false);
 
+        // record a find
         document.getElementById("record").addEventListener("click", function(data) {
             console.log("record");
-            button='record';
+            vbutton='record';
 
             postJSON("", function(data, status){
                 console.log(data);
-                button=null;
+                vbutton=null;
             });
 
         }, false);
