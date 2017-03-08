@@ -6,12 +6,13 @@ import numpy as np
 import json
 
 DATABASE = 'database.db'
-ai = Matrix()
+
+# initialize the Matrix with label=3 ( category ) and max_features=3 inclusive of depth data
+ai = Matrix(l=3, max_features=3)
 
 # set the project root directory as the static folder, you can set others.
 app = Flask(__name__, static_url_path='')
 app.config['DEBUG'] = True
-
 
 @app.before_first_request
 def setup_logging():
@@ -61,6 +62,20 @@ def log(fe, co, id):
     return send_from_directory('static', 'index.html')
 
 
+@app.route("/ids")
+def ids():
+    l={}
+    for k in ai.mydata.target_names:
+        l[k]=None
+    return json.dumps(l)
+
+@app.route("/categories")
+def categories():
+    l={}
+    for k in ai.mydata.target_data:
+        l[k]=None
+    return json.dumps(l)
+
 @app.route("/", methods=['GET', 'POST'])
 def root():
     if request.method == 'POST':
@@ -75,16 +90,28 @@ def root():
             except Exception, e:
                 return '{"result": "error: %s}' % e
             return '{"result": "ok"}'
-        else:
+        elif (data['button']=='guess'):
             print("Guessing: %s" % data)
             results = []
             for name, clf in ai.compiled_classifiers:
-                appr = {"classifier": name,
-                        "result": ai.mydata.target_data[clf.predict(np.array([data['fe'],data['co']]).reshape(1, -1))[0]]
-                        }
+                appr={}
+                if data['depth']:
+                    print("Depth Testing")
+                    appr = {"classifier": name,
+                            "result": ai.mydata.target_data[
+                                clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[0]]
+                            }
+                else:
+                    appr = {"classifier": name,
+                            "result": ai.mydata.target_data[clf.predict(np.array([data['fe'],data['co']]).reshape(1, -1))[0]]
+                            }
                 results.append(json.dumps(appr))
             print(results)
             return '{"result": %s }' % json.dumps(results)
+        elif data['button']== 'retrain':
+            retrain()
+            return '{"result": "retrained" }'
+
 
     else:
         return send_from_directory('static', 'index.html')
@@ -121,17 +148,20 @@ def init_db():
     insert(80, 80, 99, "test id", "test category")
 
 
+def retrain():
+    dbdata = query_db("SELECT * from feco")
+    print("Dumping DB")
+    print(dbdata)
+    for rec in dbdata:
+        ai.mydata.da.append(list(rec))
+    print(ai.mydata.da)
+    ai.mydata.rebuild(l=4)
+    ai.rebuild()
+
 if __name__ == "__main__":
     try:
         init_db()
     except Exception, e:
         print("DB Already initialized")
-    print("DB Contents")
-    dbdata = query_db("SELECT * from feco")
-    print(dbdata)
-    for rec in dbdata:
-        ai.mydata.da.append(list(rec))
-    print(ai.mydata.da)
-    ai.mydata.rebuild()
-    ai.rebuild()
+    retrain()
     app.run()

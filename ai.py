@@ -1,48 +1,64 @@
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.gaussian_process.kernels import RBF
 from sklearn.tree import DecisionTreeClassifier
 import datasets
 
 h = .02  # step size in the mesh
 
+
 class Matrix:
-    def __init__(self):
+    def __init__(self, l=4, max_features=2):
+        print("L=%s" % l)
         self.names = ["Decision Tree", "Random Forest"]
 
         self.COLORS = np.array(['#FF3333',  # red
-                               '#0198E1',  # blue
-                               '#BF5FFF',  # purple
-                               '#FCD116',  # yellow
-                               '#FF7216',  # orange
-                               '#4DBD33',  # green
-                               '#87421F',  # brown
-                               '#CC00CC',  # pink
-                               '#000000',  # black
-                               '#00FF00',  # lime
-                               '#0000FF',  # blue pure
-                               ])
+                                '#0198E1',  # blue
+                                '#BF5FFF',  # purple
+                                '#FCD116',  # yellow
+                                '#FF7216',  # orange
+                                '#4DBD33',  # green
+                                '#87421F',  # brown
+                                '#CC00CC',  # pink
+                                '#000000',  # black
+                                '#00FF00',  # lime
+                                '#0000FF',  # blue pure
+                                '#000080',  # navy
+                                '#008080',  # teal
+                                '#800080',  # purple
+                                '#008000',  # green
+                                '#808000',  # olive
+                                '#800000'
+                                ])
         self.classifiers = [
             # KNeighborsClassifier(n_neighbors=3, weights='distance'),
             # SVC(kernel="linear", C=0.025),
             # SVC(gamma=1, C=1),
             # GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
-            DecisionTreeClassifier(max_depth=5, max_features=2),
-            RandomForestClassifier(max_depth=5, max_features=2, n_estimators=10),
+            DecisionTreeClassifier(max_depth=5, max_features=max_features),
+            RandomForestClassifier(max_depth=5, n_estimators=10, max_features=max_features),
             # MLPClassifier(alpha=1),
             # AdaBoostClassifier(),
             # GaussianNB()
         ]
 
-        # place to hold the compiled classifiers
+        # place to hold the compiled classifiers grouped with their names
         self.compiled_classifiers = zip(self.names, self.classifiers)
+
+        # temp place to hold classifiers while compiling them
         self.tmp_clf = []
 
-        self.mydata = datasets.sweden_data(l=3)
+        # init the sweden dataset
+        self.mydata = datasets.sweden_data(l=l, max_features=3)
+
+        # rebuild the database
         self.mydata.rebuild()
 
+        # rebuild the classifiers
         self.rebuild()
 
-    def rebuild(self):
+    def rebuild(self, l=4):
         print("Rebuilding")
         self.X = self.mydata.data
         self.y = self.mydata.target
@@ -58,14 +74,18 @@ class Matrix:
 
             # iterate over classifiers
             for name, clf in zip(self.names, self.classifiers):
+                print(X)
                 clf.fit(X, y)
 
                 self.tmp_clf.append(clf)
 
-                print(self.mydata.target_data[clf.predict(np.array([11,46]).reshape(1, -1))[0]])
-                print(self.mydata.target_data[clf.predict(np.array([12,40]).reshape(1, -1))[0]])
-                print(self.mydata.target_data[clf.predict(np.array([11,20]).reshape(1, -1))[0]])
-                print(self.mydata.target_data[clf.predict(np.array([33,48]).reshape(1, -1))[0]])
+                # print(self.mydata.target_data[clf.predict(np.array([11, 46]).reshape(1, -1))[0]])
+                # print(self.mydata.target_data[clf.predict(np.array([12, 40]).reshape(1, -1))[0]])
+                # print(self.mydata.target_data[clf.predict(np.array([11, 20]).reshape(1, -1))[0]])
+                # print(self.mydata.target_data[clf.predict(np.array([33, 48]).reshape(1, -1))[0]])
+                #
+                # for i in clf.predict(np.array([12, 40, 12, 41, 12, 46]).reshape(3, 2)):
+                #     print("est: %s" % self.mydata.target_data[i])
 
         self.compiled_classifiers = zip(self.names, self.tmp_clf)
         print("AI Initialized")

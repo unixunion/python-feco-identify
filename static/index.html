@@ -31,11 +31,11 @@
         </div>
         <div class="row">
             <div class="input-field col s6">
-                <input id="id" type="text" class="validate">
+                <input id="id" type="text" class="autocomplete1">
                 <label for="id">Name</label>
             </div>
             <div class="input-field col s6">
-                <input id="category" type="text" class="validate">
+                <input id="category" type="text" class="autocomplete2">
                 <label for="category">Category</label>
             </div>
         </div>
@@ -56,25 +56,29 @@
     $(document).ready(function() {
 
         // vars
-        var vfe;
-        var vco;
+        var vfe=null;
+        var vco=null;
         var vdepth;
         var vid;
         var vcategory;
         var vbutton;
 
-        var postJSON = function(url, callback) {
+        // autocomplete data holders
+        var iddata;
+        var categorydata;
 
+        // POST for the form contents and which button is pressed
+        var postJSON = function(url, callback) {
             return jQuery.ajax({
                 'type': 'POST',
                 'url': url,
                 'contentType': 'application/json',
                 'data': JSON.stringify({
-                    "fe": vfe,
-                    "co": vco,
-                    "depth": vdepth,
-                    "id": vid,
-                    "category": vcategory,
+                    "fe": document.getElementById("fe").value,
+                    "co": document.getElementById("co").value,
+                    "depth": document.getElementById("depth").value,
+                    "id": document.getElementById("id").value,
+                    "category": document.getElementById("category").value,
                     "button": vbutton
                 }),
                 'dataType': 'json',
@@ -82,31 +86,31 @@
             });
         };
 
-        document.getElementById("fe").addEventListener("change", function(data) {
-            console.log(data.target.value);
-            vfe = data.target.value;
-        }, false);
+        $.getJSON("/ids", function( data ) {
+          console.log("populating ids");
+          iddata = data;
+          console.log(iddata);
+          // autocomplete1 fields
+            $('input.autocomplete1').autocomplete({
+                data: iddata,
+                limit: 20, // The max amount of results that can be shown at once. Default: Infinity.
+            });
+        });
 
-        document.getElementById("co").addEventListener("change", function(data) {
-            console.log(data.target.value);
-            vco = data.target.value;
-        }, false);
+        $.getJSON("/categories", function( data ) {
+          console.log("populating categorydata");
+          categorydata = data;
+          console.log(categorydata);
+          // autocomplete2 fields
+            $('input.autocomplete2').autocomplete({
+                data: categorydata,
+                limit: 20, // The max amount of results that can be shown at once. Default: Infinity.
+            });
+        });
 
-        document.getElementById("depth").addEventListener("change", function(data) {
-            console.log(data.target.value);
-            vdepth = data.target.value;
-        }, false);
 
-        document.getElementById("id").addEventListener("change", function(data) {
-            console.log(data.target.value);
-            vid = data.target.value;
-        }, false);
 
-        document.getElementById("category").addEventListener("change", function(data) {
-            console.log(data.target.value);
-            vcategory = data.target.value;
-        }, false);
-
+        // click listener for the guess button
         document.getElementById("guess").addEventListener("click", function(data) {
             console.log("guess");
             vbutton='guess';
@@ -117,7 +121,7 @@
             });
         }, false);
 
-        // record a find
+        // record a find button listener
         document.getElementById("record").addEventListener("click", function(data) {
             console.log("record");
             vbutton='record';
@@ -129,6 +133,17 @@
 
         }, false);
 
+        // retrain button listener
+        document.getElementById("retrain").addEventListener("click", function(data) {
+            console.log("retrain");
+            vbutton='retrain';
+
+            postJSON("", function(data, status){
+                console.log(data);
+                vbutton=null;
+            });
+
+        }, false);
 
     });
     </script>
