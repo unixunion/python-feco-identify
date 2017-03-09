@@ -76,24 +76,25 @@ def send_js(path):
 
 
 # guess a find
-@app.route("/guess/<int:fe>/<int:co>")
-def guess(fe, co):
-    print("Guessing")
-    for g in query_db('select * from feco'):
-        print g
-    return send_from_directory('static', 'index.html')
+# @app.route("/guess/<int:fe>/<int:co>")
+# def guess(fe, co):
+#     print("Guessing")
+#     for g in query_db('select * from feco'):
+#         print g
+#     return send_from_directory('static', 'index.html')
 
 
 # log a new find
-@app.route("/log/<int:fe>/<int:co>/<id>", methods=['GET', 'POST'])
-def log(fe, co, id):
-    print("Logging")
-    # query_db('insert into feco (fe, co, id) VALUES (%s, %s, "%s")' % (fe , co, id))
-    insert(fe, co, id)
-    return send_from_directory('static', 'index.html')
+# @app.route("/log/<int:fe>/<int:co>/<id>", methods=['GET', 'POST'])
+# def log(fe, co, id):
+#     print("Logging")
+#     # query_db('insert into feco (fe, co, id) VALUES (%s, %s, "%s")' % (fe , co, id))
+#     insert(fe, co, id)
+#     return send_from_directory('static', 'index.html')
 
 
 @app.route("/ids")
+@requires_auth
 def ids():
     l = {}
     for k in ai.mydata.target_names:
@@ -102,6 +103,7 @@ def ids():
 
 
 @app.route("/categories")
+@requires_auth
 def categories():
     l = {}
     for k in ai.mydata.target_data:
