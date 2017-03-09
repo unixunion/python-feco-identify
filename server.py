@@ -15,6 +15,7 @@ ai = Matrix(l=3, max_features=3)
 app = Flask(__name__, static_url_path='')
 app.config['DEBUG'] = True
 
+
 @app.before_first_request
 def setup_logging():
     if not app.debug:
@@ -65,17 +66,19 @@ def log(fe, co, id):
 
 @app.route("/ids")
 def ids():
-    l={}
+    l = {}
     for k in ai.mydata.target_names:
-        l[k]=None
+        l[k] = None
     return json.dumps(l)
+
 
 @app.route("/categories")
 def categories():
-    l={}
+    l = {}
     for k in ai.mydata.target_data:
-        l[k]=None
+        l[k] = None
     return json.dumps(l)
+
 
 @app.route("/", methods=['GET', 'POST'])
 def root():
@@ -84,18 +87,18 @@ def root():
         data = request.get_json(force=True)
         print(data['fe'])
 
-        if (data['button']=='record'):
+        if (data['button'] == 'record'):
             print("Recording findings: %s" % data)
             try:
                 insert(data['fe'], data['co'], data['depth'], data['id'], data['category'])
             except Exception, e:
                 return '{"result": "error: %s}' % e
             return '{"result": "ok"}'
-        elif (data['button']=='guess'):
+        elif (data['button'] == 'guess'):
             print("Guessing: %s" % data)
             results = []
             for name, clf in ai.compiled_classifiers:
-                appr={}
+                appr = {}
                 if data['depth']:
                     print("Depth Testing")
                     appr = {"classifier": name,
@@ -106,13 +109,14 @@ def root():
                     #             clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[0]]))
                 else:
                     appr = {"classifier": name,
-                            "result": ai.mydata.target_data[clf.predict(np.array([data['fe'],data['co']]).reshape(1, -1))[0]]
+                            "result": ai.mydata.target_data[
+                                clf.predict(np.array([data['fe'], data['co']]).reshape(1, -1))[0]]
                             }
                     # os.system("say 'Object identified as %s'" % ai.mydata.target_data[clf.predict(np.array([data['fe'],data['co']]).reshape(1, -1))[0]])
                 results.append(json.dumps(appr))
             print(results)
             return '{"result": %s }' % json.dumps(results)
-        elif data['button']== 'retrain':
+        elif data['button'] == 'retrain':
             retrain()
             return '{"result": "retrained" }'
 
@@ -124,8 +128,9 @@ def root():
 def insert(fe, co, depth, id, category):
     with app.app_context():
         # g.db is the database connection
-        query = 'INSERT INTO feco (fe, co, depth, id, category) VALUES (%s, %s, %s,"%s", "%s")' % (fe, co, depth, id, category)
-        cur=get_db().execute(query)
+        query = 'INSERT INTO feco (fe, co, depth, id, category) VALUES (%s, %s, %s,"%s", "%s")' % (
+        fe, co, depth, id, category)
+        cur = get_db().execute(query)
         # cur.execute(query, values)
         get_db().commit()
         # id = cur.lastrowid
@@ -147,9 +152,9 @@ def init_db():
         with app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
-    # insert(99, 99, 99,"test id", "test category")
-    # insert(90, 90, 90, "test id", "test category")
-    # insert(80, 80, 99, "test id", "test category")
+        # insert(99, 99, 99,"test id", "test category")
+        # insert(90, 90, 90, "test id", "test category")
+        # insert(80, 80, 99, "test id", "test category")
 
 
 def retrain():
@@ -163,10 +168,11 @@ def retrain():
     ai.mydata.rebuild(l=4)
     ai.rebuild()
 
+
 if __name__ == "__main__":
     try:
         init_db()
     except Exception, e:
         print("DB Already initialized")
     retrain()
-    app.run()
+    app.run(host='0.0.0.0', port=5000, debug=False)
