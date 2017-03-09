@@ -5759,7 +5759,7 @@ textarea.materialize-textarea {
   outline: none;
   height: 3rem;
   width: 100%;
-  font-size: 1rem;
+  font-size: 16px;
   margin: 0 0 20px 0;
   padding: 0;
   box-shadow: none;
@@ -8585,4 +8585,4 @@ button.picker__today:focus, button.picker__clear:focus, button.picker__close:foc
   }
 }
 
-input, textarea {font-size:16px;}
+input, textarea {font-size:100px;}
