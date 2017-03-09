@@ -4,6 +4,7 @@ from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.tree import DecisionTreeClassifier
 import datasets
+import os
 
 h = .02  # step size in the mesh
 
@@ -53,13 +54,14 @@ class Matrix:
         self.mydata = datasets.sweden_data(l=l, max_features=3)
 
         # rebuild the database
-        self.mydata.rebuild()
+        self.mydata.rebuild(l=l)
 
         # rebuild the classifiers
-        self.rebuild()
+        self.rebuild(l=l)
 
     def rebuild(self, l=4):
         print("Rebuilding")
+        # os.system("say 'Rebuilding matrix'")
         self.X = self.mydata.data
         self.y = self.mydata.target
         self.lookup_d = self.mydata.target_data
@@ -76,6 +78,7 @@ class Matrix:
             for name, clf in zip(self.names, self.classifiers):
                 print(X)
                 clf.fit(X, y)
+                # os.system("say '%s initialized'" % name)
 
                 self.tmp_clf.append(clf)
 

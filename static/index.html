@@ -45,14 +45,22 @@
             <a class="waves-effect waves-light btn" id="retrain">Retrain</a>
         </div>
 
+        <div class="row">
+            <ul id="results-collection" class="collection with-header">
+                <li class="collection-header"><h4>Results</h4></li>
+                <li class="collection-item"></li>
+            </ul>
+
+        </div>
+
     </form>
 </div>
 
-    <!--Import jQuery before materialize.js-->
-    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-    <script type="text/javascript" src="/static/js/materialize.min.js"></script>
+<!--Import jQuery before materialize.js-->
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="/static/js/materialize.min.js"></script>
 
-    <script type="text/javascript">
+<script type="text/javascript">
     $(document).ready(function() {
 
         // vars
@@ -62,6 +70,8 @@
         var vid;
         var vcategory;
         var vbutton;
+
+        var finds = [];
 
         // autocomplete data holders
         var iddata;
@@ -117,7 +127,25 @@
             postJSON("", function(data, status){
                 console.log(data);
                 vbutton=null;
-                Materialize.toast(data['result'], 4000);
+                <!--Materialize.toast(data['result'], 4000);-->
+                var node = document.createElement("li");
+                var item;
+                for (x in data['result']) {
+                    <!--console.log(data['result'][x]);-->
+                    var i = JSON.parse(data['result'][x]);
+                    console.log(i['result']);
+                    var item = document.createTextNode(i['result']);
+                    node.className = "collection-item";
+                    node.appendChild(item);
+                    if (x<1) {
+                        node.appendChild(document.createTextNode(" / "));
+                    }
+                }
+                <!--var item = document.createTextNode(data['result']);-->
+                <!--node.className = "collection-item";-->
+                <!--node.appendChild(item);-->
+                var list = document.getElementById("results-collection");
+                list.insertBefore(node, list.childNodes[2]);
             });
         }, false);
 

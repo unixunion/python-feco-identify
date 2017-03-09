@@ -4,6 +4,7 @@ from flask import Flask, request, send_from_directory, g
 from ai import Matrix
 import numpy as np
 import json
+import os
 
 DATABASE = 'database.db'
 
@@ -101,10 +102,13 @@ def root():
                             "result": ai.mydata.target_data[
                                 clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[0]]
                             }
+                    # os.system("say 'Classifier %s identifies object as %s'" % (name, ai.mydata.target_data[
+                    #             clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[0]]))
                 else:
                     appr = {"classifier": name,
                             "result": ai.mydata.target_data[clf.predict(np.array([data['fe'],data['co']]).reshape(1, -1))[0]]
                             }
+                    # os.system("say 'Object identified as %s'" % ai.mydata.target_data[clf.predict(np.array([data['fe'],data['co']]).reshape(1, -1))[0]])
                 results.append(json.dumps(appr))
             print(results)
             return '{"result": %s }' % json.dumps(results)
@@ -143,12 +147,13 @@ def init_db():
         with app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
-    insert(99, 99, 99,"test id", "test category")
-    insert(90, 90, 90, "test id", "test category")
-    insert(80, 80, 99, "test id", "test category")
+    # insert(99, 99, 99,"test id", "test category")
+    # insert(90, 90, 90, "test id", "test category")
+    # insert(80, 80, 99, "test id", "test category")
 
 
 def retrain():
+    # os.system("say 'Matrix retraining'")
     dbdata = query_db("SELECT * from feco")
     print("Dumping DB")
     print(dbdata)
