@@ -9,6 +9,23 @@ from ai import Matrix
 import numpy as np
 import json
 
+DATABASE = 'database.db'
+
+# initialize the Matrix with label=3 ( category ) and max_features=3 inclusive of depth data
+ai = Matrix(l=3, max_features=3)
+ai2 = Matrix(l=3, max_features=2)
+
+# set the project root directory as the static folder, you can set others.
+app = Flask(__name__, static_url_path='')
+app.config['DEBUG'] = True
+
+def notnull(name, obj):
+    print("Checking %s object %s is not None or ''" % (name, obj))
+    if obj is not None and obj is not '' and obj is not u"" and obj is not u'':
+        return
+    else:
+        print("%s is not set" % name)
+        raise Exception("%s is empty" % name)
 
 def check_auth(username, password):
     """This function is called to check if a username /
@@ -34,17 +51,6 @@ def requires_auth(f):
         return f(*args, **kwargs)
 
     return decorated
-
-
-DATABASE = 'database.db'
-
-# initialize the Matrix with label=3 ( category ) and max_features=3 inclusive of depth data
-ai = Matrix(l=3, max_features=3)
-ai2 = Matrix(l=3, max_features=2)
-
-# set the project root directory as the static folder, you can set others.
-app = Flask(__name__, static_url_path='')
-app.config['DEBUG'] = True
 
 
 @app.before_first_request
@@ -117,17 +123,25 @@ def categories():
 @requires_auth
 def root():
     if request.method == 'POST':
-        print("post")
+        # print("post")
         data = request.get_json(force=True)
-        print(data['fe'])
+        print(data)
 
         if (data['button'] == 'record'):
-            print("Recording findings: %s" % data)
             try:
-                insert(data['fe'], data['co'], data['depth'], data['id'], data['category'])
+                notnull("fe", data['fe'])
+                notnull("co", data['co'])
+                notnull("depth", data['depth'])
+                notnull("name", data['id'])
+                notnull("category", data['category'])
+                print("Recording findings: %s" % data)
+                try:
+                    insert(data['fe'], data['co'], data['depth'], data['id'], data['category'])
+                except Exception, e:
+                    return '{"result": "error: %s}' % e
+                return '{"result": "ok"}'
             except Exception, e:
-                return '{"result": "error: %s}' % e
-            return '{"result": "ok"}'
+                return '{"result": "error, %s" }' % e.message
         elif (data['button'] == 'guess'):
             print("Guessing: %s" % data)
             results = []
@@ -151,8 +165,11 @@ def root():
             print(results)
             return '{"result": %s }' % json.dumps(results)
         elif data['button'] == 'retrain':
-            retrain()
-            return '{"result": "retrained" }'
+            try:
+                retrain()
+                return '{"result": "retrained" }'
+            except Exception, e:
+                return '{"result": "error retraining" }'
 
 
     else:

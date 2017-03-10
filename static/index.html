@@ -31,6 +31,10 @@
             </div>
         </div>
         <div class="row">
+            <a class="waves-effect waves-light btn" id="guess">Guess</a>
+        </div>
+
+        <div class="row">
             <div class="input-field col s6">
                 <input id="id" type="text" class="autocomplete1">
                 <label for="id">Name</label>
@@ -40,8 +44,8 @@
                 <label for="category">Category</label>
             </div>
         </div>
+
         <div class="row">
-            <a class="waves-effect waves-light btn" id="guess">Guess</a>
             <a class="waves-effect waves-light btn" id="record">Record</a>
             <a class="waves-effect waves-light btn" id="retrain">Retrain</a>
         </div>
@@ -97,28 +101,34 @@
             });
         };
 
-        $.getJSON("/ids", function( data ) {
-          console.log("populating ids");
-          iddata = data;
-          console.log(iddata);
-          // autocomplete1 fields
-            $('input.autocomplete1').autocomplete({
-                data: iddata,
-                limit: 20, // The max amount of results that can be shown at once. Default: Infinity.
-            });
-        });
 
-        $.getJSON("/categories", function( data ) {
-          console.log("populating categorydata");
-          categorydata = data;
-          console.log(categorydata);
-          // autocomplete2 fields
-            $('input.autocomplete2').autocomplete({
-                data: categorydata,
-                limit: 20, // The max amount of results that can be shown at once. Default: Infinity.
-            });
-        });
+        var updateAutoCompleters=function() {
 
+            $.getJSON("/ids", function( data ) {
+              console.log("populating ids");
+              iddata = data;
+              console.log(iddata);
+              // autocomplete1 fields
+                $('input.autocomplete1').autocomplete({
+                    data: iddata,
+                    limit: 20, // The max amount of results that can be shown at once. Default: Infinity.
+                });
+            });
+
+            $.getJSON("/categories", function( data ) {
+              console.log("populating categorydata");
+              categorydata = data;
+              console.log(categorydata);
+              // autocomplete2 fields
+                $('input.autocomplete2').autocomplete({
+                    data: categorydata,
+                    limit: 20, // The max amount of results that can be shown at once. Default: Infinity.
+                });
+            });
+
+        };
+
+        updateAutoCompleters();
 
 
         // click listener for the guess button
@@ -128,11 +138,19 @@
             postJSON("", function(data, status){
                 console.log(data);
                 vbutton=null;
-                <!--Materialize.toast(data['result'], 4000);-->
+
+                var findings = ""
+                for (x in data['result']) {
+                    var j = JSON.parse(data['result'][x]);
+                    findings = findings + j['result'];
+                    if (x<1) {
+                        findings = findings + " / "
+                    }
+                }
+                Materialize.toast(findings, 4000);
                 var node = document.createElement("li");
                 var item;
                 for (x in data['result']) {
-                    <!--console.log(data['result'][x]);-->
                     var i = JSON.parse(data['result'][x]);
                     console.log(i['result']);
                     var item = document.createTextNode(i['result']);
@@ -142,9 +160,6 @@
                         node.appendChild(document.createTextNode(" / "));
                     }
                 }
-                <!--var item = document.createTextNode(data['result']);-->
-                <!--node.className = "collection-item";-->
-                <!--node.appendChild(item);-->
                 var list = document.getElementById("results-collection");
                 list.insertBefore(node, list.childNodes[2]);
             });
@@ -157,7 +172,9 @@
 
             postJSON("", function(data, status){
                 console.log(data);
+                Materialize.toast(data['result'], 4000);
                 vbutton=null;
+                updateAutoCompleters();
             });
 
         }, false);
@@ -169,9 +186,21 @@
 
             postJSON("", function(data, status){
                 console.log(data);
+                Materialize.toast(data['result'], 4000);
                 vbutton=null;
+                updateAutoCompleters();
             });
 
+        }, false);
+
+        document.getElementById("id").addEventListener("change", function(data) {
+            console.log("changing");
+            $(".autocomplete-content").empty()
+        }, false);
+
+        document.getElementById("category").addEventListener("change", function(data) {
+            console.log("changing");
+            $(".autocomplete-content").empty()
         }, false);
 
     });

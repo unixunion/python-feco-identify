@@ -60,6 +60,7 @@ class Matrix:
 
     def rebuild(self, l=4):
         print("Rebuilding")
+        self.mydata.rebuild(l=l)
         # os.system("say 'Rebuilding matrix'")
         self.X = self.mydata.data
         self.y = self.mydata.target
