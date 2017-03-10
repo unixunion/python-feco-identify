@@ -150,9 +150,17 @@ def ids():
 
 @app.route("/fields")
 def fields():
-    f = ["square", "park"]
-    return json.dumps(f)
-
+    print("Getting fields")
+    fl = {}
+    try:
+        list_fields = query_db('Select DISTINCT fieldid from feco WHERE userid IS "%s"' % session['username'])
+        print("List of fields: %s" % list_fields)
+        for f in list_fields:
+            fl[f[0]] = None
+        return json.dumps(fl)
+    except Exception, e:
+        print(e.message)
+        return redirect("/login")
 
 @app.route("/categories")
 # @requires_auth
@@ -192,7 +200,7 @@ def root():
                     notnull("field", data['field'])
                     print("Recording findings: %s" % data)
                     try:
-                        insert(data['fe'], data['co'], data['depth'], data['id'], data['category'])
+                        insert(data['fe'], data['co'], data['depth'], data['id'], data['category'], session['username'], data['field'])
                     except Exception, e:
                         return '{"result": "error: %s}' % e
                     retrain_session()
@@ -246,11 +254,11 @@ def root():
         return redirect("/login")
 
 
-def insert(fe, co, depth, id, category):
+def insert(fe, co, depth, id, category, userid, field):
     with app.app_context():
         # g.db is the database connection
-        query = 'INSERT INTO feco (fe, co, depth, id, category, userid) VALUES (%s, %s, %s,"%s", "%s", "%s")' % (
-            fe, co, depth, id, category, session['username'])
+        query = 'INSERT INTO feco (fe, co, depth, id, category, userid, fieldid) VALUES (%s, %s, %s,"%s", "%s", "%s", "%s")' % (
+            fe, co, depth, id, category, userid, field)
         cur = get_db().execute(query)
         # cur.execute(query, values)
         get_db().commit()

@@ -17,11 +17,10 @@
 <nav class="nav-extended">
 
     <div class="nav-content">
+        <a href="#" class="brand-logo right">Logo</a>
       <ul class="tabs tabs-transparent">
         <li class="tab"><a class="active" href="#ai">AI</a></li>
         <li class="tab"><a href="#fields">Fields</a></li>
-        <li class="tab"><a href="#test3">Disabled Tab</a></li>
-        <li class="tab"><a href="#test4">Test 4</a></li>
       </ul>
 
 
@@ -61,14 +60,20 @@
                 <label for="category">Category</label>
             </div>
         </div>
-        <div class="row">
-            <div class="input-field col s12 field-select">
-                <select id="active-field">
-                  <option value="" disabled selected>Search field</option>
-                </select>
-                <label>Search Field</label>
-              </div>
+         <div class="row">
+            <div class="input-field col s12">
+                <input id="field" type="text" class="autocomplete3">
+                <label for="field">Field</label>
+            </div>
         </div>
+        <!--<div class="row">-->
+            <!--<div class="input-field col s12 field-select">-->
+                <!--<select id="active-field">-->
+                  <!--<option value="" disabled selected>Search field</option>-->
+                <!--</select>-->
+                <!--<label>Search Field</label>-->
+              <!--</div>-->
+        <!--</div>-->
 
         <div class="row">
             <a class="waves-effect waves-light btn col s6" id="record">Record</a>
@@ -102,6 +107,7 @@
         var vid;
         var vcategory;
         var vbutton;
+        var fielddata;
 
         var finds = [];
 
@@ -121,7 +127,7 @@
                     "depth": document.getElementById("depth").value,
                     "id": document.getElementById("id").value,
                     "category": document.getElementById("category").value,
-                    "field": document.getElementById('active-field').value,
+                    "field": document.getElementById('field').value,
                     "button": vbutton
                 }),
                 'dataType': 'json',
@@ -157,29 +163,39 @@
             $.getJSON("/fields", function( data ) {
               console.log("populating fields");
               fielddata = data;
-
-              var currentvalue = document.getElementById("active-field").value;
-
-              var select = document.getElementById("active-field");
-
-                var length = select.options.length;
-                for (i = 0; i < length; i++) {
-                  select.options[i] = null;
-                }
-
               console.log(fielddata);
-              // autocomplete2 fields
-                var next_id = $("select");
-                $.each(data, function(key, value) {
-                    console.log(key);
-                    console.log(value);
-                    $(next_id).append($("<option></option>").attr("value", value).text(value));
+                $('input.autocomplete3').autocomplete({
+                    data: fielddata,
+                    limit: 20, // The max amount of results that can be shown at once. Default: Infinity.
                 });
-
-                document.getElementById("active-field").value=currentvalue;
-
-                $(next_id).material_select();
             });
+
+            <!--$.getJSON("/fields", function( data ) {-->
+              <!--console.log("populating fields");-->
+              <!--fielddata = data;-->
+
+              <!--var currentvalue = document.getElementById("active-field").value;-->
+
+              <!--var select = document.getElementById("active-field");-->
+
+                <!--var length = select.options.length;-->
+                <!--for (i = 0; i < length; i++) {-->
+                  <!--select.options[i] = null;-->
+                <!--}-->
+
+              <!--console.log(fielddata);-->
+              <!--// autocomplete2 fields-->
+                <!--var next_id = $("select");-->
+                <!--$.each(data, function(key, value) {-->
+                    <!--console.log(key);-->
+                    <!--console.log(value);-->
+                    <!--$(next_id).append($("<option></option>").attr("value", value).text(value));-->
+                <!--});-->
+
+                <!--document.getElementById("active-field").value=currentvalue;-->
+
+                <!--$(next_id).material_select();-->
+            <!--});-->
 
 
 
