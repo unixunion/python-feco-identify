@@ -1,23 +1,28 @@
-from functools import wraps
+import json
 import logging
 import sqlite3
-from flask import Flask, request, send_from_directory, g
-from flask import Response
-
-from ai import Matrix
+from functools import wraps
 
 import numpy as np
-import json
+from flask import Flask, request, send_from_directory, g, redirect, session
+from flask import Response
+from flask import url_for
+
+from ai import Matrix
 
 DATABASE = 'database.db'
 
 # initialize the Matrix with label=3 ( category ) and max_features=3 inclusive of depth data
-ai = Matrix(l=3, max_features=3)
-ai2 = Matrix(l=3, max_features=2)
+# ai = Matrix(l=3, max_features=3)
+# ai2 = Matrix(l=3, max_features=2)
+
+ai_sessions = {}
 
 # set the project root directory as the static folder, you can set others.
 app = Flask(__name__, static_url_path='')
 app.config['DEBUG'] = True
+app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
+
 
 def notnull(name, obj):
     print("Checking %s object %s is not None or ''" % (name, obj))
@@ -27,6 +32,36 @@ def notnull(name, obj):
         print("%s is not set" % name)
         raise Exception("%s is empty" % name)
 
+
+
+"""
+New Auth Stuff
+"""
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    print("login")
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        if check_auth(data['username'], data['password']):
+            print("Login Success")
+            session['username'] = data['username']
+            ai_sessions["%s-ai" % session['username']] = Matrix(l=3, max_features=3)
+            ai_sessions["%s-ai2" % session['username']] = Matrix(l=3, max_features=2)
+            retrain_session()
+            # print("Redirecting to %s" % url_for("root"))
+            return '{"result": "ok"}'
+        else:
+            return '{"result": "error"}'
+    else:
+        return send_from_directory('static', 'login.html')
+
+@app.route('/logout')
+def logout():
+    # remove the username from the session if it's there
+    session.pop('username', None)
+    return redirect("/login")
+
+
 def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
@@ -34,23 +69,23 @@ def check_auth(username, password):
     return username == 'keghol' and password == 'co1n'
 
 
-def authenticate():
-    """Sends a 401 response that enables basic auth"""
-    return Response(
-        'Could not verify your access level for that URL.\n'
-        'You have to login with proper credentials', 401,
-        {'WWW-Authenticate': 'Basic realm="Login Required"'})
+# def authenticate():
+#     """Sends a 401 response that enables basic auth"""
+#     return Response(
+#         'Could not verify your access level for that URL.\n'
+#         'You have to login with proper credentials', 401,
+#         {'WWW-Authenticate': 'Basic realm="Login Required"'})
 
 
-def requires_auth(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return authenticate()
-        return f(*args, **kwargs)
-
-    return decorated
+# def requires_auth(f):
+#     @wraps(f)
+#     def decorated(*args, **kwargs):
+#         auth = request.authorization
+#         if not auth or not check_auth(auth.username, auth.password):
+#             return authenticate()
+#         return f(*args, **kwargs)
+#
+#     return decorated
 
 
 @app.before_first_request
@@ -102,86 +137,120 @@ def send_js(path):
 
 
 @app.route("/ids")
-@requires_auth
+# @requires_auth
 def ids():
     l = {}
-    for k in ai.mydata.target_names:
-        l[k] = None
-    return json.dumps(l)
+    try:
+        for k in ai_sessions["%s-ai" % session['username']].mydata.target_names:
+            l[k] = None
+        return json.dumps(l)
+    except Exception, e:
+        return redirect("/login")
+
+
+@app.route("/fields")
+def fields():
+    f = ["square", "park"]
+    return json.dumps(f)
 
 
 @app.route("/categories")
-@requires_auth
+# @requires_auth
 def categories():
     l = {}
-    for k in ai.mydata.target_data:
-        l[k] = None
-    return json.dumps(l)
+    try:
+        for k in ai_sessions["%s-ai" % session['username']].mydata.target_data:
+            l[k] = None
+        return json.dumps(l)
+    except Exception, e:
+        return redirect("/login")
 
 
 @app.route("/", methods=['GET', 'POST'])
-@requires_auth
 def root():
-    if request.method == 'POST':
-        # print("post")
-        data = request.get_json(force=True)
-        print(data)
+    print("Root")
+    if 'username' in session:
+        print("User %s is logged in" % session['username'])
+        try:
+            notnull("ai", ai_sessions["%s-ai" % session['username']])
+            notnull("ai2", ai_sessions["%s-ai2" % session['username']])
+        except Exception, e:
+            return redirect("/login")
 
-        if (data['button'] == 'record'):
-            try:
-                notnull("fe", data['fe'])
-                notnull("co", data['co'])
-                notnull("depth", data['depth'])
-                notnull("name", data['id'])
-                notnull("category", data['category'])
-                print("Recording findings: %s" % data)
+        if request.method == 'POST':
+            # print("post")
+            data = request.get_json(force=True)
+            print(data)
+
+            if (data['button'] == 'record'):
                 try:
-                    insert(data['fe'], data['co'], data['depth'], data['id'], data['category'])
+                    notnull("fe", data['fe'])
+                    notnull("co", data['co'])
+                    notnull("depth", data['depth'])
+                    notnull("name", data['id'])
+                    notnull("category", data['category'])
+                    notnull("field", data['field'])
+                    print("Recording findings: %s" % data)
+                    try:
+                        insert(data['fe'], data['co'], data['depth'], data['id'], data['category'])
+                    except Exception, e:
+                        return '{"result": "error: %s}' % e
+                    retrain_session()
+                    return '{"result": "accepted and retrained"}'
                 except Exception, e:
-                    return '{"result": "error: %s}' % e
-                retrain()
-                return '{"result": "accepted and retrained"}'
-            except Exception, e:
-                return '{"result": "error, %s" }' % e.message
-        elif (data['button'] == 'guess'):
-            print("Guessing: %s" % data)
-            results = []
-            appr = {}
-            if data['depth']:
-                for name, clf in ai.compiled_classifiers:
-                        print("Depth set, so 3 feature testing")
-                        appr = {"classifier": name,
-                                "result": ai.mydata.target_data[
-                                    clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[0]]
-                                }
-                        results.append(json.dumps(appr))
-            else:
-                for name, clf in ai2.compiled_classifiers:
-                    print("2 feature testing")
-                    appr = {"classifier": name,
-                            "result": ai2.mydata.target_data[
-                                clf.predict(np.array([data['fe'], data['co']]).reshape(1, -1))[0]]
-                            }
-                    results.append(json.dumps(appr))
-            print(results)
-            return '{"result": %s }' % json.dumps(results)
-        elif data['button'] == 'retrain':
-            try:
-                retrain()
-                return '{"result": "retrained" }'
-            except Exception, e:
-                return '{"result": "error retraining" }'
+                    return '{"result": "error, %s" }' % e.message
+            elif (data['button'] == 'guess'):
+
+                results = []
+                appr = {}
+
+                try:
+                    print("Guessing: %s" % data)
+                    notnull("fe", data['fe'])
+                    notnull("co", data['co'])
+
+                    if data['depth']:
+                        for name, clf in ai_sessions["%s-ai" % session['username']].compiled_classifiers:
+                            print("Depth set, so 3 feature testing")
+                            appr = {"classifier": name,
+                                    "result": ai_sessions["%s-ai" % session['username']].mydata.target_data[
+                                        clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[0]]
+                                    }
+                            results.append(json.dumps(appr))
+                    else:
+                        for name, clf in ai_sessions["%s-ai2" % session['username']].compiled_classifiers:
+                            print("2 feature testing")
+                            appr = {"classifier": name,
+                                    "result": ai_sessions["%s-ai2" % session['username']].mydata.target_data[
+                                        clf.predict(np.array([data['fe'], data['co']]).reshape(1, -1))[0]]
+                                    }
+                            results.append(json.dumps(appr))
+                    print(results)
+                    return '{"result": %s }' % json.dumps(results)
+                except Exception, e:
+                    print("fe/co not set")
+                    results.append(json.dumps({"result": "%s" % e.message}))
+                    return '{"result": %s }' % json.dumps(results)
+            elif data['button'] == 'retrain':
+                try:
+                    retrain_session()
+                    return '{"result": "retrained" }'
+                except Exception, e:
+                    return '{"result": "error retraining" }'
 
 
+        else:
+            return send_from_directory('static', 'index.html')
     else:
-        return send_from_directory('static', 'index.html')
+        print("Unknown user")
+        return redirect("/login")
 
 
 def insert(fe, co, depth, id, category):
     with app.app_context():
         # g.db is the database connection
-        query = 'INSERT INTO feco (fe, co, depth, id, category) VALUES (%s, %s, %s,"%s", "%s")' % (
-            fe, co, depth, id, category)
+        query = 'INSERT INTO feco (fe, co, depth, id, category, userid) VALUES (%s, %s, %s,"%s", "%s", "%s")' % (
+            fe, co, depth, id, category, session['username'])
         cur = get_db().execute(query)
         # cur.execute(query, values)
         get_db().commit()
@@ -209,23 +278,43 @@ def init_db():
         # insert(80, 80, 99, "test id", "test category")
 
 
-def retrain():
-    # os.system("say 'Matrix retraining'")
-    dbdata = query_db("SELECT * from feco")
-    print("Dumping DB")
-    print(dbdata)
-    for rec in dbdata:
-        print(list(rec))
-        ai.mydata.da.append(list(rec))
-        ai2.mydata.da.append(list(rec))
-    print("Ai data:")
-    print(ai.mydata.da)
+def retrain_session():
+    with app.app_context():
+        dbdata = query_db("SELECT fe, co, depth, id, category from feco WHERE userid IS '%s'" % session['username'])
+        print("Dumping DB")
+        print(dbdata)
+        for rec in dbdata:
+            print(list(rec))
+            ai_sessions["%s-ai" % session['username']].mydata.da.append(list(rec))
+            ai_sessions["%s-ai2" % session['username']].mydata.da.append(list(rec))
+        print("Ai data:")
+        print(ai_sessions["%s-ai" % session['username']].mydata.da)
 
-    ai.mydata.rebuild(l=4)
-    ai.rebuild()
+        ai_sessions["%s-ai" % session['username']].mydata.rebuild(l=4)
+        ai_sessions["%s-ai" % session['username']].rebuild()
 
-    ai2.mydata.rebuild(l=4)
-    ai2.rebuild()
+        ai_sessions["%s-ai2" % session['username']].mydata.rebuild(l=4)
+        ai_sessions["%s-ai2" % session['username']].rebuild()
+
+
+
+# def retrain():
+#     # os.system("say 'Matrix retraining'")
+#     dbdata = query_db("SELECT fe, co, depth, id, category from feco")
+#     print("Dumping DB")
+#     print(dbdata)
+#     for rec in dbdata:
+#         print(list(rec))
+#         ai.mydata.da.append(list(rec))
+#         ai2.mydata.da.append(list(rec))
+#     print("Ai data:")
+#     print(ai.mydata.da)
+#
+#     ai.mydata.rebuild(l=4)
+#     ai.rebuild()
+#
+#     ai2.mydata.rebuild(l=4)
+#     ai2.rebuild()
 
 
 if __name__ == "__main__":
@@ -233,5 +322,5 @@ if __name__ == "__main__":
         init_db()
     except Exception, e:
         print("DB Already initialized")
-    retrain()
+    # retrain()
     app.run(host='0.0.0.0', port=5000, debug=True)

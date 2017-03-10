@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="/static/css/materialize.css"  media="screen,projection"/>
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+
+<body>
+
+<div class="row">
+    <form class="col s12">
+
+        <div class="row">
+            <div class="input-field col s12">
+                <input id="username" type="text" class="validate">
+                <label for="username">Username</label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input-field col s12">
+                <input id="password" type="password" class="validate">
+                <label for="password">Password</label>
+            </div>
+        </div>
+
+        <div class="row">
+            <a class="waves-effect waves-light btn col s6" id="submit">Login</a>
+        </div>
+
+    </form>
+</div>
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="/static/js/materialize.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+
+        // POST for the form contents and which button is pressed
+        var loginFunction = function(url, callback) {
+            return jQuery.ajax({
+                'type': 'POST',
+                'url': url,
+                'contentType': 'application/json',
+                'data': JSON.stringify({
+                    "username": document.getElementById("username").value,
+                    "password": document.getElementById("password").value
+                }),
+                'dataType': 'json',
+                'success': callback
+            });
+        }
+
+        // record a find button listener
+        document.getElementById("submit").addEventListener("click", function(data) {
+            console.log("submit");
+            loginFunction("/login", function(data, status){
+                console.log(data['result']);
+                if (data['result']=="ok") {
+                    window.location="/";
+                }
+            });
+        }, false);
+
+});
+</script>
+
+
+</body>

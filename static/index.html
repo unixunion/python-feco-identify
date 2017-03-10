@@ -13,25 +13,42 @@
 
 <body>
 
+
+<nav class="nav-extended">
+
+    <div class="nav-content">
+      <ul class="tabs tabs-transparent">
+        <li class="tab"><a class="active" href="#ai">AI</a></li>
+        <li class="tab"><a href="#fields">Fields</a></li>
+        <li class="tab"><a href="#test3">Disabled Tab</a></li>
+        <li class="tab"><a href="#test4">Test 4</a></li>
+      </ul>
+
+
+    </div>
+
+  </nav>
+
+<div id="ai" class="col s12">
 <div class="row">
     <form class="col s12">
 
         <div class="row">
-            <div class="input-field col s4">
+            <div class="input-field col s6">
                 <input id="fe" type="tel" class="validate etracinput">
-                <label for="fe">Ferrous</label>
+                <label for="fe">Ferrous 1-35</label>
             </div>
-            <div class="input-field col s4">
+            <div class="input-field col s6">
                 <input id="co" type="tel" class="validate etracinput">
-                <label for="co">Conductivity</label>
-            </div>
-            <div class="input-field col s4">
-                <input id="depth" type="tel" class="validate etracinput">
-                <label for="depth">Depth</label>
+                <label for="co">Conductivity 1-50</label>
             </div>
         </div>
         <div class="row">
-            <a class="waves-effect waves-light btn" id="guess">Guess</a>
+        <div class="input-field col s6">
+            <input id="depth" type="tel" class="validate etracinput">
+            <label for="depth">Depth in cm</label>
+        </div>
+            <a class="col s6 waves-effect waves-light btn" id="guess">Guess</a>
         </div>
 
         <div class="row">
@@ -44,10 +61,18 @@
                 <label for="category">Category</label>
             </div>
         </div>
+        <div class="row">
+            <div class="input-field col s12 field-select">
+                <select id="active-field">
+                  <option value="" disabled selected>Search field</option>
+                </select>
+                <label>Search Field</label>
+              </div>
+        </div>
 
         <div class="row">
-            <a class="waves-effect waves-light btn" id="record">Record</a>
-            <a class="waves-effect waves-light btn" id="retrain">Retrain</a>
+            <a class="waves-effect waves-light btn col s6" id="record">Record</a>
+            <a class="waves-effect waves-light btn col s6" id="retrain">Retrain</a>
         </div>
 
         <div class="row">
@@ -55,10 +80,10 @@
                 <li class="collection-header"><h5>Results</h5></li>
                 <li class="collection-item"></li>
             </ul>
-
         </div>
 
     </form>
+</div>
 </div>
 
 <!--Import jQuery before materialize.js-->
@@ -67,6 +92,8 @@
 
 <script type="text/javascript">
     $(document).ready(function() {
+
+        $('select').material_select();
 
         // vars
         var vfe=null;
@@ -94,6 +121,7 @@
                     "depth": document.getElementById("depth").value,
                     "id": document.getElementById("id").value,
                     "category": document.getElementById("category").value,
+                    "field": document.getElementById('active-field').value,
                     "button": vbutton
                 }),
                 'dataType': 'json',
@@ -125,6 +153,35 @@
                     limit: 20, // The max amount of results that can be shown at once. Default: Infinity.
                 });
             });
+
+            $.getJSON("/fields", function( data ) {
+              console.log("populating fields");
+              fielddata = data;
+
+              var currentvalue = document.getElementById("active-field").value;
+
+              var select = document.getElementById("active-field");
+
+                var length = select.options.length;
+                for (i = 0; i < length; i++) {
+                  select.options[i] = null;
+                }
+
+              console.log(fielddata);
+              // autocomplete2 fields
+                var next_id = $("select");
+                $.each(data, function(key, value) {
+                    console.log(key);
+                    console.log(value);
+                    $(next_id).append($("<option></option>").attr("value", value).text(value));
+                });
+
+                document.getElementById("active-field").value=currentvalue;
+
+                $(next_id).material_select();
+            });
+
+
 
         };
 
