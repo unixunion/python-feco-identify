@@ -1,17 +1,16 @@
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.gaussian_process import GaussianProcessClassifier
-from sklearn.gaussian_process.kernels import RBF
 from sklearn.tree import DecisionTreeClassifier
+
 import datasets
-import os
 
 h = .02  # step size in the mesh
 
-
 class Matrix:
-    def __init__(self, l=4, max_features=2):
+    def __init__(self, l=4, max_features=3):
         print("L=%s" % l)
+
+        self.max_features = max_features
         self.names = ["Decision Tree", "Random Forest"]
 
         self.COLORS = np.array(['#FF3333',  # red
@@ -51,7 +50,7 @@ class Matrix:
         self.tmp_clf = []
 
         # init the sweden dataset
-        self.mydata = datasets.sweden_data(l=l, max_features=3)
+        self.mydata = datasets.sweden_data(l=l, max_features=max_features)
 
         # rebuild the database
         self.mydata.rebuild(l=l)
@@ -76,7 +75,7 @@ class Matrix:
 
             # iterate over classifiers
             for name, clf in zip(self.names, self.classifiers):
-                print(X)
+                # print(X)
                 clf.fit(X, y)
                 # os.system("say '%s initialized'" % name)
 

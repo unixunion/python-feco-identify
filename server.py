@@ -5,6 +5,7 @@ from flask import Flask, request, send_from_directory, g
 from flask import Response
 
 from ai import Matrix
+
 import numpy as np
 import json
 
@@ -39,6 +40,7 @@ DATABASE = 'database.db'
 
 # initialize the Matrix with label=3 ( category ) and max_features=3 inclusive of depth data
 ai = Matrix(l=3, max_features=3)
+ai2 = Matrix(l=3, max_features=2)
 
 # set the project root directory as the static folder, you can set others.
 app = Flask(__name__, static_url_path='')
@@ -129,23 +131,23 @@ def root():
         elif (data['button'] == 'guess'):
             print("Guessing: %s" % data)
             results = []
-            for name, clf in ai.compiled_classifiers:
-                appr = {}
-                if data['depth']:
-                    print("Depth Testing")
+            appr = {}
+            if data['depth']:
+                for name, clf in ai.compiled_classifiers:
+                        print("Depth set, so 3 feature testing")
+                        appr = {"classifier": name,
+                                "result": ai.mydata.target_data[
+                                    clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[0]]
+                                }
+                        results.append(json.dumps(appr))
+            else:
+                for name, clf in ai2.compiled_classifiers:
+                    print("2 feature testing")
                     appr = {"classifier": name,
-                            "result": ai.mydata.target_data[
-                                clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[0]]
-                            }
-                    # os.system("say 'Classifier %s identifies object as %s'" % (name, ai.mydata.target_data[
-                    #             clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[0]]))
-                else:
-                    appr = {"classifier": name,
-                            "result": ai.mydata.target_data[
+                            "result": ai2.mydata.target_data[
                                 clf.predict(np.array([data['fe'], data['co']]).reshape(1, -1))[0]]
                             }
-                    # os.system("say 'Object identified as %s'" % ai.mydata.target_data[clf.predict(np.array([data['fe'],data['co']]).reshape(1, -1))[0]])
-                results.append(json.dumps(appr))
+                    results.append(json.dumps(appr))
             print(results)
             return '{"result": %s }' % json.dumps(results)
         elif data['button'] == 'retrain':
@@ -195,10 +197,17 @@ def retrain():
     print("Dumping DB")
     print(dbdata)
     for rec in dbdata:
+        print(list(rec))
         ai.mydata.da.append(list(rec))
+        ai2.mydata.da.append(list(rec))
+    print("Ai data:")
     print(ai.mydata.da)
+
     ai.mydata.rebuild(l=4)
     ai.rebuild()
+
+    ai2.mydata.rebuild(l=4)
+    ai2.rebuild()
 
 
 if __name__ == "__main__":

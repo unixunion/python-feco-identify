@@ -1,0 +1,13 @@
+** Bug Fixes / Improvements **
+
+Update autocomplete(s) when a new object is recorded.
+
+
+** Features **
+
+New "Searchfield/land" Support and plot/land switching.
+
+
+** Implemented **
+
+If Depth is ommited, do a dual feature matrix instead of tri feature.

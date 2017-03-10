@@ -24,6 +24,11 @@ class buildData:
         self.target_data = []
         self.target_names = [] # names of individual finds
 
+        if max_features == 2:
+            print("2 feature mode")
+        elif max_features == 3:
+            print("3 feature mode")
+
         # iterate over the objects in the array, appending co-ordintates and labeling
         for i in aray:
 
@@ -45,7 +50,7 @@ class buildData:
 # this should be improved to use 3x 2 coordinates scanned at 3 different angles.
 # fe co
 class sweden_data:
-    def __init__(self, l=4, max_features=2):
+    def __init__(self, l=4, max_features=3):
         # source data fe, co, depth, name, category
         self.da = [
             [2, 42,  10, "5kr", "silver coin"],
@@ -98,9 +103,11 @@ class sweden_data:
         ]
 
         self.max_features=max_features
+        print("%s feature mode" % max_features)
 
     def rebuild(self, l=4):
         # shuffle(self.da)
+        print("Rebuilding with %s features" % self.max_features)
         self.do = buildData(self.da, l=l, max_features=self.max_features)
         self.data = self.do.data
         self.target = self.do.target
