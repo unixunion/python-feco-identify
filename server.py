@@ -139,7 +139,8 @@ def root():
                     insert(data['fe'], data['co'], data['depth'], data['id'], data['category'])
                 except Exception, e:
                     return '{"result": "error: %s}' % e
-                return '{"result": "ok"}'
+                retrain()
+                return '{"result": "accepted and retrained"}'
             except Exception, e:
                 return '{"result": "error, %s" }' % e.message
         elif (data['button'] == 'guess'):
@@ -233,4 +234,4 @@ if __name__ == "__main__":
     except Exception, e:
         print("DB Already initialized")
     retrain()
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
