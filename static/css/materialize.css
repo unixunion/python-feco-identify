@@ -8585,4 +8585,8 @@ button.picker__today:focus, button.picker__clear:focus, button.picker__close:foc
   }
 }
 
-input, textarea {font-size:100px;}
+input, textarea {
+    font-size:100px;
+    color: #000;
+}
+

@@ -4,7 +4,7 @@ import sqlite3
 from functools import wraps
 
 import numpy as np
-from flask import Flask, request, send_from_directory, g, redirect, session
+from flask import Flask, request, send_from_directory, g, redirect, session, jsonify
 from flask import Response
 from flask import url_for
 
@@ -136,8 +136,25 @@ def send_js(path):
 #     return send_from_directory('static', 'index.html')
 
 
+@app.route("/dbdump")
+def dbdump():
+    try:
+        dbdata = query_db("SELECT rowid, fe, co, depth, id, category, fieldid from feco WHERE userid IS '%s' ORDER BY rowid DESC" % session['username'])
+        print(dbdata)
+        return json.dumps(dbdata)
+    except Exception, e:
+        return json.dumps([(1, "error", "error", "error", "Error: %s" % e.message, "Unable to query database", 'dbdump')])
+
+
+@app.route("/delete/<int:rowid>")
+def delete(rowid):
+    try:
+        commit_db('DELETE FROM feco where ROWID = "%s" AND USERID = "%s"' % (rowid, session['username']))
+        return json.dumps({"result": "ok"})
+    except Exception, e:
+        return json.dumps({"result": e.message})
+
 @app.route("/ids")
-# @requires_auth
 def ids():
     l = {}
     try:
@@ -273,6 +290,11 @@ def query_db(query, args=(), one=False):
         rv = cur.fetchall()
         cur.close()
         return (rv[0] if rv else None) if one else rv
+
+
+def commit_db(query, args=(), one=False):
+    get_db().execute(query, args)
+    get_db().commit()
 
 
 def init_db():

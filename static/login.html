@@ -31,7 +31,7 @@
         </div>
 
         <div class="row">
-            <a class="waves-effect waves-light btn col s6" id="submit">Login</a>
+            <a class="waves-effect waves-light btn col s6" id="submit" type="submit">Login</a>
         </div>
 
     </form>
@@ -42,6 +42,8 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
+
+
 
         // POST for the form contents and which button is pressed
         var loginFunction = function(url, callback) {
@@ -68,6 +70,18 @@ $(document).ready(function() {
                 }
             });
         }, false);
+
+
+        // on enter in the password field, login
+        document.getElementById("password")
+            .addEventListener("keyup", function(event) {
+            event.preventDefault();
+            if (event.keyCode == 13) {
+                document.getElementById("submit").click();
+            }
+        });
+
+
 
 });
 </script>
