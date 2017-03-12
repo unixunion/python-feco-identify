@@ -1,13 +1,10 @@
 import json
 import logging
 import sqlite3
-from functools import wraps
+import hashlib
 
 import numpy as np
 from flask import Flask, request, send_from_directory, g, redirect, session, jsonify
-from flask import Response
-from flask import url_for
-
 from ai import Matrix
 
 DATABASE = 'database.db'
@@ -33,27 +30,30 @@ def notnull(name, obj):
         raise Exception("%s is empty" % name)
 
 
-
 """
 New Auth Stuff
 """
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     print("login")
     if request.method == 'POST':
         data = request.get_json(force=True)
+        print(data)
         if check_auth(data['username'], data['password']):
             print("Login Success")
             session['username'] = data['username']
             ai_sessions["%s-ai" % session['username']] = Matrix(l=3, max_features=3)
             ai_sessions["%s-ai2" % session['username']] = Matrix(l=3, max_features=2)
-            retrain_session()
+            retrain_session(u'')
             # print("Redirecting to %s" % url_for("root"))
             return '{"result": "ok"}'
         else:
             return '{"result": "error"}'
     else:
         return send_from_directory('static', 'login.html')
+
 
 @app.route('/logout')
 def logout():
@@ -66,26 +66,31 @@ def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
     """
-    return username == 'keghol' and password == 'co1n'
+    pw224 = hashlib.sha224(password).hexdigest()
+    # return username == 'keghol' and password == 'co1n'
+    dbdata = query_db(
+        "SELECT email, password FROM users WHERE email = '%s' AND password = '%s'" % (username, pw224))
+    if dbdata:
+        return True
+    else:
+        return False
 
 
-# def authenticate():
-#     """Sends a 401 response that enables basic auth"""
-#     return Response(
-#         'Could not verify your access level for that URL.\n'
-#         'You have to login with proper credentials', 401,
-#         {'WWW-Authenticate': 'Basic realm="Login Required"'})
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        try:
+            data = request.get_json(force=True)
+            query = 'INSERT INTO users (email, password) VALUES ("%s", "%s")' % (
+                data['username'], hashlib.sha224(data['password']).hexdigest())
+            cur = get_db().execute(query)
+            get_db().commit()
+            return '{"result": "ok"}'
+        except Exception, e:
+            return '{"result": "error"}'
+    else:
+        return send_from_directory('static', 'register.html')
 
-
-# def requires_auth(f):
-#     @wraps(f)
-#     def decorated(*args, **kwargs):
-#         auth = request.authorization
-#         if not auth or not check_auth(auth.username, auth.password):
-#             return authenticate()
-#         return f(*args, **kwargs)
-#
-#     return decorated
 
 
 @app.before_first_request
@@ -118,32 +123,17 @@ def send_js(path):
     return send_from_directory('static', path)
 
 
-# guess a find
-# @app.route("/guess/<int:fe>/<int:co>")
-# def guess(fe, co):
-#     print("Guessing")
-#     for g in query_db('select * from feco'):
-#         print g
-#     return send_from_directory('static', 'index.html')
-
-
-# log a new find
-# @app.route("/log/<int:fe>/<int:co>/<id>", methods=['GET', 'POST'])
-# def log(fe, co, id):
-#     print("Logging")
-#     # query_db('insert into feco (fe, co, id) VALUES (%s, %s, "%s")' % (fe , co, id))
-#     insert(fe, co, id)
-#     return send_from_directory('static', 'index.html')
-
-
 @app.route("/dbdump")
 def dbdump():
     try:
-        dbdata = query_db("SELECT rowid, fe, co, depth, id, category, fieldid from feco WHERE userid IS '%s' ORDER BY rowid DESC" % session['username'])
+        dbdata = query_db(
+            "SELECT rowid, fe, co, depth, id, category, fieldid from feco WHERE userid IS '%s' ORDER BY rowid DESC" %
+            session['username'])
         print(dbdata)
         return json.dumps(dbdata)
     except Exception, e:
-        return json.dumps([(1, "error", "error", "error", "Error: %s" % e.message, "Unable to query database", 'dbdump')])
+        return json.dumps(
+            [(1, "error", "error", "error", "Error: %s" % e.message, "Unable to query database", 'dbdump')])
 
 
 @app.route("/delete/<int:rowid>")
@@ -153,6 +143,7 @@ def delete(rowid):
         return json.dumps({"result": "ok"})
     except Exception, e:
         return json.dumps({"result": e.message})
+
 
 @app.route("/ids")
 def ids():
@@ -178,6 +169,21 @@ def fields():
     except Exception, e:
         print(e.message)
         return redirect("/login")
+
+@app.route("/fieldlist")
+def fieldlist():
+    print("Getting fields")
+    fl = []
+    try:
+        list_fields = query_db('Select DISTINCT fieldid from feco WHERE userid IS "%s"' % session['username'])
+        print("List of fields: %s" % list_fields)
+        for f in list_fields:
+            fl.append(f)
+        return json.dumps(fl)
+    except Exception, e:
+        print(e.message)
+        return redirect("/login")
+
 
 @app.route("/categories")
 # @requires_auth
@@ -217,10 +223,11 @@ def root():
                     notnull("field", data['field'])
                     print("Recording findings: %s" % data)
                     try:
-                        insert(data['fe'], data['co'], data['depth'], data['id'], data['category'], session['username'], data['field'])
+                        insert(data['fe'], data['co'], data['depth'], data['id'], data['category'], session['username'],
+                               data['field'])
                     except Exception, e:
                         return '{"result": "error: %s}' % e
-                    retrain_session()
+                    retrain_session(data['field'])
                     return '{"result": "accepted and retrained"}'
                 except Exception, e:
                     return '{"result": "error, %s" }' % e.message
@@ -239,7 +246,8 @@ def root():
                             print("Depth set, so 3 feature testing")
                             appr = {"classifier": name,
                                     "result": ai_sessions["%s-ai" % session['username']].mydata.target_data[
-                                        clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[0]]
+                                        clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[
+                                            0]]
                                     }
                             results.append(json.dumps(appr))
                     else:
@@ -258,10 +266,11 @@ def root():
                     return '{"result": %s }' % json.dumps(results)
             elif data['button'] == 'retrain':
                 try:
-                    retrain_session()
-                    return '{"result": "retrained" }'
+                    # notnull("field", data['field'])
+                    retrain_session(data['field'])
+                    return '{"result": "retrained for field: %s" }' % data['field']
                 except Exception, e:
-                    return '{"result": "error retraining" }'
+                    return '{"result": "error retraining %s" }' % e.message
 
 
         else:
@@ -308,11 +317,26 @@ def init_db():
         # insert(80, 80, 99, "test id", "test category")
 
 
-def retrain_session():
+def retrain_session(field):
+    print('Retraining, field is %s' % field)
+    print(type(field))
     with app.app_context():
-        dbdata = query_db("SELECT fe, co, depth, id, category from feco WHERE userid IS '%s'" % session['username'])
+        dbdata = []
+        if field is u'':
+            print("No Field, loading all datasets")
+            dbdata = query_db("SELECT fe, co, depth, id, category from feco WHERE userid IS '%s'" % session['username'])
+        else:
+            print("Narrowing field to %s" % field)
+            dbdata = query_db(
+                "SELECT fe, co, depth, id, category from feco WHERE userid IS '%s' AND fieldid IS '%s'" % (
+                session['username'], field))
         print("Dumping DB")
         print(dbdata)
+
+        # new AI sessions
+        ai_sessions["%s-ai" % session['username']] = Matrix(l=3, max_features=3)
+        ai_sessions["%s-ai2" % session['username']] = Matrix(l=3, max_features=2)
+
         for rec in dbdata:
             print(list(rec))
             ai_sessions["%s-ai" % session['username']].mydata.da.append(list(rec))
@@ -325,26 +349,6 @@ def retrain_session():
 
         ai_sessions["%s-ai2" % session['username']].mydata.rebuild(l=4)
         ai_sessions["%s-ai2" % session['username']].rebuild()
-
-
-
-# def retrain():
-#     # os.system("say 'Matrix retraining'")
-#     dbdata = query_db("SELECT fe, co, depth, id, category from feco")
-#     print("Dumping DB")
-#     print(dbdata)
-#     for rec in dbdata:
-#         print(list(rec))
-#         ai.mydata.da.append(list(rec))
-#         ai2.mydata.da.append(list(rec))
-#     print("Ai data:")
-#     print(ai.mydata.da)
-#
-#     ai.mydata.rebuild(l=4)
-#     ai.rebuild()
-#
-#     ai2.mydata.rebuild(l=4)
-#     ai2.rebuild()
 
 
 if __name__ == "__main__":

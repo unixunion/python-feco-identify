@@ -18,8 +18,8 @@
 
         <div class="row">
             <div class="input-field col s12">
-                <input id="username" type="text" class="validate">
-                <label for="username">Username</label>
+                <input id="username" type="email" class="validate">
+                <label for="username">Email</label>
             </div>
         </div>
 
@@ -31,8 +31,14 @@
         </div>
 
         <div class="row">
-            <a class="waves-effect waves-light btn col s6" id="submit" type="submit">Login</a>
-            <a class="waves-effect waves-light btn col s6" id="register">Register</a>
+            <div class="input-field col s12">
+                <input id="password2" type="password" class="validate">
+                <label for="password2">Password</label>
+            </div>
+        </div>
+
+        <div class="row">
+            <a class="waves-effect waves-light btn col s6" id="submit" type="submit">Register</a>
         </div>
 
     </form>
@@ -44,38 +50,34 @@
 <script type="text/javascript">
 $(document).ready(function() {
 
-
-
         // POST for the form contents and which button is pressed
         var loginFunction = function(url, callback) {
-            return jQuery.ajax({
-                'type': 'POST',
-                'url': url,
-                'contentType': 'application/json',
-                'data': JSON.stringify({
-                    "username": document.getElementById("username").value,
-                    "password": document.getElementById("password").value
-                }),
-                'dataType': 'json',
-                'success': callback
-            });
+            if (document.getElementById("password").value == document.getElementById("password2").value) {
+                return jQuery.ajax({
+                    'type': 'POST',
+                    'url': url,
+                    'contentType': 'application/json',
+                    'data': JSON.stringify({
+                        "username": document.getElementById("username").value,
+                        "password": document.getElementById("password").value
+                    }),
+                    'dataType': 'json',
+                    'success': callback
+                });
+            } else {
+                console.log("Password missmatch");
+            }
         }
 
         // record a find button listener
         document.getElementById("submit").addEventListener("click", function(data) {
             console.log("submit");
-            loginFunction("/login", function(data, status){
+            loginFunction("/register", function(data, status){
                 console.log(data['result']);
                 if (data['result']=="ok") {
-                    window.location="/";
+                    window.location="/login";
                 }
             });
-        }, false);
-
-        // record a find button listener
-        document.getElementById("register").addEventListener("click", function(data) {
-            console.log("register");
-            window.location="/register";
         }, false);
 
 

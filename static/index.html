@@ -13,16 +13,14 @@
 
 <body>
 
-
 <nav class="nav-extended">
-
     <div class="nav-content blue">
         <!--<a href="#" class="brand-logo right">Logo</a>-->
         <ul class="tabs tabs-transparent">
             <li class="tab"><a class="active" href="#ai">AI</a></li>
             <li class="tab" id="dbtab"><a href="#database">DB</a></li>
+            <li class="tab" id="fieldtab"><a href="#database">Fields</a></li>
         </ul>
-
 
     </div>
 
@@ -31,7 +29,6 @@
 <div id="database" class="col s12">
     <div class="row">
         <ul class="collection" id="db-collection">
-
         </ul>
     </div>
 </div>
@@ -274,18 +271,39 @@
 
         }, false);
 
-        document.getElementById("id").addEventListener("change", function(data) {
-            console.log("changing");
-            $(".autocomplete-content").empty()
-        }, false);
+        <!--document.getElementById("id").addEventListener("change", function(data) {-->
+            <!--console.log("changing");-->
+            <!--$(".autocomplete-content").empty()-->
+        <!--}, false);-->
 
-        document.getElementById("category").addEventListener("change", function(data) {
-            console.log("changing");
-            $(".autocomplete-content").empty()
-        }, false);
+        <!--document.getElementById("category").addEventListener("change", function(data) {-->
+            <!--console.log("changing");-->
+            <!--$(".autocomplete-content").empty()-->
+        <!--}, false);-->
 
 
-        var show_db_contents = function() {
+        <!--var show_db_contents = function(url) {-->
+            <!--var ne = document.getElementById("db-collection").children.length;-->
+
+            <!--for (x=0; x<ne; x++) {-->
+                <!--console.log("removing " + x);-->
+                <!--document.getElementById("db-collection").firstChild.remove()-->
+                <!--console.log(document.getElementById("db-collection").children.length);-->
+            <!--}-->
+
+            <!--$.getJSON(url, function( data ) {-->
+              <!--console.log("populating db");-->
+              <!--for (entry in data) {-->
+                <!--&lt;!&ndash;var dbdata = JSON.parse(data[entry]);&ndash;&gt;-->
+                <!--console.log(data[entry]);-->
+                <!--document.getElementById("db-collection").appendChild(new_db_record_view(data[entry]));-->
+              <!--}-->
+
+            <!--});-->
+        <!--}-->
+
+
+        var show_contents = function(url, callback) {
             var ne = document.getElementById("db-collection").children.length;
 
             for (x=0; x<ne; x++) {
@@ -294,12 +312,13 @@
                 console.log(document.getElementById("db-collection").children.length);
             }
 
-            $.getJSON("/dbdump", function( data ) {
-              console.log("populating db");
+            $.getJSON(url, function( data ) {
+              console.log("getting contents from rest:");
+              console.log(data);
               for (entry in data) {
-                <!--var dbdata = JSON.parse(data[entry]);-->
+                console.log(entry);
                 console.log(data[entry]);
-                document.getElementById("db-collection").appendChild(new_db_record_view(data[entry]));
+                document.getElementById("db-collection").appendChild(callback(data[entry]));
               }
 
             });
@@ -310,8 +329,13 @@
         // event listener for when DB tab is selected
         document.getElementById("dbtab").addEventListener("click", function(data) {
             console.log("clicked db tab");
-            show_db_contents();
+            show_contents('/dbdump', new_db_record_view);
+        });
 
+        // event listener for when DB tab is selected
+        document.getElementById("fieldtab").addEventListener("click", function(data) {
+            console.log("clicked field tab");
+            show_contents('/fieldlist', new_field_record_view);
         });
 
 
@@ -334,7 +358,7 @@
                 console.log("Delete " + record[0]);
                 $.getJSON("/delete/" + record[0] , function( data ) {
                   console.log("deleted record in db");
-                  show_db_contents();
+                  show_contents('/dbdump', new_db_record_view);
                 });
 
             });
@@ -345,12 +369,33 @@
             coordinates.innerHTML = record[1] + ":" + record[2] + " @" + record[3] + "<BR>location:" + record[6];
             listitem.appendChild(coordinates);
 
-
-
             return listitem;
-
         };
 
+        var new_field_record_view = function(record) {
+
+            console.log("field view record: " + record);
+
+            listitem = document.createElement('li')
+	        listitem.setAttribute('class', 'collection-item avatar');
+
+	        icon = document.createElement('i');
+            icon.setAttribute('class', 'material-icons circle');
+            icon.innerHTML="folder";
+            listitem.appendChild(icon);
+
+            span = document.createElement('span');
+            span.setAttribute('class', 'title')
+            span.innerHTML = record;
+
+            listitem.appendChild(span);
+
+            <!--var coordinates = document.createElement('p');-->
+            <!--coordinates.innerHTML = record[1] + ":" + record[2] + " @" + record[3] + "<BR>location:" + record[6];-->
+            <!--listitem.appendChild(coordinates);-->
+
+            return listitem;
+        };
 
     });
     </script>

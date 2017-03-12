@@ -56,7 +56,7 @@ class Matrix:
         self.mydata.rebuild(l=l)
 
         # rebuild the classifiers
-        self.rebuild(l=l)
+        # self.rebuild(l=l)
 
     def rebuild(self, l=4):
         print("Rebuilding")
