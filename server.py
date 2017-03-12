@@ -46,8 +46,10 @@ def login():
             session['username'] = data['username']
             ai_sessions["%s-ai" % session['username']] = Matrix(l=3, max_features=3)
             ai_sessions["%s-ai2" % session['username']] = Matrix(l=3, max_features=2)
-            retrain_session(u'')
-            # print("Redirecting to %s" % url_for("root"))
+            try:
+                retrain_session(u'')
+            except Exception, e:
+                return '{"result": "ok"}'
             return '{"result": "ok"}'
         else:
             return '{"result": "error"}'
@@ -90,7 +92,6 @@ def register():
             return '{"result": "error"}'
     else:
         return send_from_directory('static', 'register.html')
-
 
 
 @app.before_first_request
@@ -169,6 +170,7 @@ def fields():
     except Exception, e:
         print(e.message)
         return redirect("/login")
+
 
 @app.route("/fieldlist")
 def fieldlist():
@@ -268,7 +270,10 @@ def root():
                 try:
                     # notnull("field", data['field'])
                     retrain_session(data['field'])
-                    return '{"result": "retrained for field: %s" }' % data['field']
+                    if not data['field']:
+                        return '{"result": "retrained for all field"}'
+                    else:
+                        return '{"result": "retrained for field: %s" }' % data['field']
                 except Exception, e:
                     return '{"result": "error retraining %s" }' % e.message
 
@@ -312,9 +317,14 @@ def init_db():
         with app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
-        # insert(99, 99, 99,"test id", "test category")
-        # insert(90, 90, 90, "test id", "test category")
-        # insert(80, 80, 99, "test id", "test category")
+
+
+def create_users():
+    with app.app_context():
+        db = get_db()
+        with app.open_resource('users.sql', mode='r') as f:
+            db.cursor().executescript(f.read())
+        db.commit()
 
 
 def retrain_session(field):
@@ -329,7 +339,7 @@ def retrain_session(field):
             print("Narrowing field to %s" % field)
             dbdata = query_db(
                 "SELECT fe, co, depth, id, category from feco WHERE userid IS '%s' AND fieldid IS '%s'" % (
-                session['username'], field))
+                    session['username'], field))
         print("Dumping DB")
         print(dbdata)
 
@@ -356,5 +366,10 @@ if __name__ == "__main__":
         init_db()
     except Exception, e:
         print("DB Already initialized")
+
+    try:
+        create_users()
+    except Exception, e:
+        print("Users table already created")
     # retrain()
     app.run(host='0.0.0.0', port=5000, debug=True)
