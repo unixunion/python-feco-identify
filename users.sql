@@ -1,0 +1,1 @@
+CREATE TABLE users (email VARCHAR(64) NOT NULL , password VARCHAR(64) NOT NULL, CONSTRAINT email_unique UNIQUE (email));

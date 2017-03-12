@@ -51,6 +51,7 @@ class buildData:
 # fe co
 class sweden_data:
     def __init__(self, l=4, max_features=3):
+
         # source data fe, co, depth, name, category
         self.da = [
             # [2, 42,  10, "5kr", "silver coin"],
@@ -99,7 +100,7 @@ class sweden_data:
             # [13, 46, 4, "bottle top", "picnic trash"],
             # [14, 6,  12, "25 ore", "silver coin"],
             # [14, 29, 5, "bottle top", "picnic trash"],
-            [35, 50, 10, "iron", "iron"]
+            # [35, 50, 8, "iron", "iron"]
         ]
 
         self.max_features=max_features

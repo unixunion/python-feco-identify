@@ -53,7 +53,7 @@ class Matrix:
         self.mydata = datasets.sweden_data(l=l, max_features=max_features)
 
         # rebuild the database
-        self.mydata.rebuild(l=l)
+        # self.mydata.rebuild(l=l)
 
         # rebuild the classifiers
         # self.rebuild(l=l)

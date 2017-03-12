@@ -175,33 +175,6 @@
                 });
             });
 
-            <!--$.getJSON("/fields", function( data ) {-->
-              <!--console.log("populating fields");-->
-              <!--fielddata = data;-->
-
-              <!--var currentvalue = document.getElementById("active-field").value;-->
-
-              <!--var select = document.getElementById("active-field");-->
-
-                <!--var length = select.options.length;-->
-                <!--for (i = 0; i < length; i++) {-->
-                  <!--select.options[i] = null;-->
-                <!--}-->
-
-              <!--console.log(fielddata);-->
-              <!--// autocomplete2 fields-->
-                <!--var next_id = $("select");-->
-                <!--$.each(data, function(key, value) {-->
-                    <!--console.log(key);-->
-                    <!--console.log(value);-->
-                    <!--$(next_id).append($("<option></option>").attr("value", value).text(value));-->
-                <!--});-->
-
-                <!--document.getElementById("active-field").value=currentvalue;-->
-
-                <!--$(next_id).material_select();-->
-            <!--});-->
-
 
 
         };
@@ -243,6 +216,7 @@
             });
         }, false);
 
+
         // record a find button listener
         document.getElementById("record").addEventListener("click", function(data) {
             console.log("record");
@@ -271,38 +245,8 @@
 
         }, false);
 
-        <!--document.getElementById("id").addEventListener("change", function(data) {-->
-            <!--console.log("changing");-->
-            <!--$(".autocomplete-content").empty()-->
-        <!--}, false);-->
 
-        <!--document.getElementById("category").addEventListener("change", function(data) {-->
-            <!--console.log("changing");-->
-            <!--$(".autocomplete-content").empty()-->
-        <!--}, false);-->
-
-
-        <!--var show_db_contents = function(url) {-->
-            <!--var ne = document.getElementById("db-collection").children.length;-->
-
-            <!--for (x=0; x<ne; x++) {-->
-                <!--console.log("removing " + x);-->
-                <!--document.getElementById("db-collection").firstChild.remove()-->
-                <!--console.log(document.getElementById("db-collection").children.length);-->
-            <!--}-->
-
-            <!--$.getJSON(url, function( data ) {-->
-              <!--console.log("populating db");-->
-              <!--for (entry in data) {-->
-                <!--&lt;!&ndash;var dbdata = JSON.parse(data[entry]);&ndash;&gt;-->
-                <!--console.log(data[entry]);-->
-                <!--document.getElementById("db-collection").appendChild(new_db_record_view(data[entry]));-->
-              <!--}-->
-
-            <!--});-->
-        <!--}-->
-
-
+        // calls a url and passes results to a function
         var show_contents = function(url, callback) {
             var ne = document.getElementById("db-collection").children.length;
 
@@ -310,6 +254,10 @@
                 console.log("removing " + x);
                 document.getElementById("db-collection").firstChild.remove()
                 console.log(document.getElementById("db-collection").children.length);
+            }
+
+            if (document.getElementById("db-collection").children.length >0) {
+                document.getElementById("db-collection").firstChild.remove()
             }
 
             $.getJSON(url, function( data ) {
@@ -389,10 +337,6 @@
             span.innerHTML = record;
 
             listitem.appendChild(span);
-
-            <!--var coordinates = document.createElement('p');-->
-            <!--coordinates.innerHTML = record[1] + ":" + record[2] + " @" + record[3] + "<BR>location:" + record[6];-->
-            <!--listitem.appendChild(coordinates);-->
 
             return listitem;
         };
