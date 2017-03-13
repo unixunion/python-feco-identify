@@ -9,92 +9,7 @@
 
     <!--Let browser know website is optimized for mobile-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-</head>
 
-<body>
-
-<nav class="nav-extended">
-    <div class="nav-content blue">
-        <!--<a href="#" class="brand-logo right">Logo</a>-->
-        <ul class="tabs tabs-transparent">
-            <li class="tab"><a class="active" href="#ai">AI</a></li>
-            <li class="tab" id="dbtab"><a href="#database">DB</a></li>
-            <li class="tab" id="fieldtab"><a href="#database">Fields</a></li>
-        </ul>
-
-    </div>
-
-</nav>
-
-<div id="database" class="col s12">
-    <div class="row">
-        <ul class="collection" id="db-collection">
-        </ul>
-    </div>
-</div>
-
-
-<div id="ai" class="col s12">
-    <div class="row">
-        <form class="col s12">
-            <div class="row">
-                <div class="input-field col s6">
-                    <input id="fe" type="tel" class="validate etracinput black-text">
-                    <label for="fe">Ferrous 1-35</label>
-                </div>
-                <div class="input-field col s6">
-                    <input id="co" type="tel" class="validate etracinput">
-                    <label for="co">Conductivity 1-50</label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="input-field col s6">
-                    <input id="depth" type="tel" class="validate etracinput">
-                    <label for="depth">Depth in cm</label>
-                </div>
-                <a class="col s6 waves-effect waves-light btn" id="guess">Guess</a>
-            </div>
-
-            <div class="row">
-                <div class="input-field col s6">
-                    <input id="id" type="text" class="autocomplete1">
-                    <label for="id">Name</label>
-                </div>
-                <div class="input-field col s6">
-                    <input id="category" type="text" class="autocomplete2">
-                    <label for="category">Category</label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="input-field col s12">
-                    <input id="field" type="text" class="autocomplete3">
-                    <label for="field">Field</label>
-                </div>
-            </div>
-            <!--<div class="row">-->
-            <!--<div class="input-field col s12 field-select">-->
-            <!--<select id="active-field">-->
-            <!--<option value="" disabled selected>Search field</option>-->
-            <!--</select>-->
-            <!--<label>Search Field</label>-->
-            <!--</div>-->
-            <!--</div>-->
-
-            <div class="row">
-                <a class="waves-effect waves-light btn col s6" id="record">Record</a>
-                <a class="waves-effect waves-light btn col s6" id="retrain">Retrain</a>
-            </div>
-
-            <div class="row">
-                <ul id="results-collection" class="collection with-header">
-                    <li class="collection-header"><h5>Results</h5></li>
-                    <li class="collection-item"></li>
-                </ul>
-            </div>
-
-        </form>
-    </div>
-</div>
 
 <!--Import jQuery before materialize.js-->
 <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -286,7 +201,6 @@
             show_contents('/fieldlist', new_field_record_view);
         });
 
-
         var new_db_record_view = function(record) {
 
             listitem = document.createElement('li')
@@ -301,7 +215,8 @@
             span.setAttribute('class', 'title')
             span.innerHTML = record[4] + " / " + record[5];
             var button = document.createElement('a');
-            button.setAttribute('class', 'waves-effect waves-light btn col s1 right');
+            button.innerHTML="X";
+            button.setAttribute('class', 'waves-effect waves-light btn col s3 red right');
             button.addEventListener("click", function(data){
                 console.log("Delete " + record[0]);
                 $.getJSON("/delete/" + record[0] , function( data ) {
@@ -314,7 +229,7 @@
             listitem.appendChild(span);
 
             var coordinates = document.createElement('p');
-            coordinates.innerHTML = record[1] + ":" + record[2] + " @" + record[3] + "<BR>location:" + record[6];
+            coordinates.innerHTML = "FE:" + record[1] + " CO:" + record[2] + " @ depth:" + record[3] + "<BR>location:" + record[6];
             listitem.appendChild(coordinates);
 
             return listitem;
@@ -341,8 +256,199 @@
             return listitem;
         };
 
+
+
+
     });
     </script>
+
+
+</head>
+
+<body>
+
+<nav class="nav-extended">
+
+<!--<div class="nav-wrapper">-->
+      <!--<a href="#" class="brand-logo">Logo</a>-->
+      <!--<a href="#" data-activates="mobile-demo" class="button-collapse"><i class="material-icons">menu</i></a>-->
+      <!--<ul id="nav-mobile" class="right hide-on-med-and-down">-->
+        <!--<li><a href="sass.html">Sass</a></li>-->
+        <!--<li><a href="badges.html">Components</a></li>-->
+        <!--<li><a href="collapsible.html">JavaScript</a></li>-->
+      <!--</ul>-->
+      <!--<ul class="side-nav" id="mobile-demo">-->
+        <!--<li><a href="sass.html">Sass</a></li>-->
+        <!--<li><a href="badges.html">Components</a></li>-->
+        <!--<li><a href="collapsible.html">JavaScript</a></li>-->
+      <!--</ul>-->
+    <!--</div>-->
+
+
+    <div class="nav-content blue">
+        <!--<a href="#" class="brand-logo right">Logo</a>-->
+        <ul class="tabs tabs-transparent">
+            <li class="tab"><a class="active" href="#ai">Detect</a></li>
+            <li class="tab" id="dbtab"><a href="#database">Records</a></li>
+            <li class="tab" id="fieldtab"><a href="#database">Search Areas</a></li>
+            <li class="tab" id="helptab"><a href="#help">Help</a></li>
+        </ul>
+
+    </div>
+
+</nav>
+
+<div id="database" class="col s12">
+    <div class="row">
+        <ul class="collection" id="db-collection">
+        </ul>
+    </div>
+</div>
+
+<div id="help" class="col s12">
+    <div class="row">
+        <ul class="collection">
+            <li>
+                <h5>Before you start</h5>
+                <p>
+                    This app is utilizing various AI techniques to determine the identify of a object detected with a
+                    metal detector. This tool is designed to rapidly learn and filter out trash from treasure based on search
+                    site.
+                </p>
+                <p>
+                    The algorithm is designed to learn about the environment you are searching in by separating similar
+                    signals based on fe/co/depth of objects found on the field which you have logged previously.
+                </p>
+                <p>
+                    Remember to "retrain" your AI when you change search areas! Edit your "search area" field, click retrain.
+                </p>
+            </li>
+
+            <li>
+                <h5>fields, names and categories</h5>
+                <p>
+                    When logging finds, it is very important that you catalog the finds. Cataloging is achieved by entering
+                    the fe, co, depth, name, category and search area into the "Detect" view, and clicking "record".
+                </p>
+                <p>
+                    The name, category and search area boxes will autocomplete once you have something in the database.
+                </p>
+                <p>
+                    the "name" field is the fully fledged name of the object. e.g "2/3 skillning 1836".
+                    the "category" field is the object filter used by the AI, e.g. "bronze coin". Try not use more than 8
+                    categories for a field, examples of categories are: silver coin, bronze coin, picnic trash, copper coin, CuNi coin
+                </p>
+                <p>
+                    Try not to categorize objects with wildly different FE/CO numbers together, since this casts a wider
+                    net when the algorithm is solving a find.
+                </p>
+            </li>
+
+            <li>
+                <h5>Start Training</h5>
+                <li>
+                    <p>By Default, there is no data in your database, finds, and their data are created as you "log" finds.</p>
+                </li>
+                <p>Pull out your detector, and go detecting on your search site. When you find a object of "interest", note its
+                    FE, CO and Depth values as detected by your detector before digging it out. Once you dig it out, log it
+                    by entering FE, CO, Depth, Name and a "Category" in the "Detect" view of the app.
+                </p>
+                <img class="responsive-img" src="/static/img/recording.png">
+            </li>
+
+            <li>
+                <h5>Guessing</h5>
+                <p>
+                    Once you have some data in the system, you can start to use the "guess" button. The database takes a while to
+                    be fully sentient, so continue to dig/catalog finds.
+
+                </p>
+                <img class="responsive-img" src="/static/img/guessing.png">
+
+            </li>
+
+           <li>
+                <h5>Retraining / Field Selection</h5>
+                <p>
+                    Before you resume searching a site enter your search area name, and click "retrain". If you want to
+                    use your global database ignoring fields specific data, clear "search area" and click "retrain"
+                </p>
+            </li>
+
+            <li>
+                <h5>Record Management</h5>
+                <p>
+                    You can delete records from the "record" view.
+                </p>
+            </li>
+
+        </ul>
+    </div>
+</div>
+
+
+<div id="ai" class="col s12">
+    <div class="row">
+        <form class="col s12">
+            <div class="row">
+                <div class="input-field col s6">
+                    <input id="fe" type="tel" class="validate etracinput black-text">
+                    <label for="fe">Ferrous 1-35</label>
+                </div>
+                <div class="input-field col s6">
+                    <input id="co" type="tel" class="validate etracinput">
+                    <label for="co">Conductivity 1-50</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s6">
+                    <input id="depth" type="tel" class="validate etracinput">
+                    <label for="depth">Depth in cm</label>
+                </div>
+                <a class="col s6 waves-effect waves-light btn blue" id="guess">Guess</a>
+            </div>
+
+            <div class="row">
+                <div class="input-field col s6">
+                    <input id="id" type="text" class="autocomplete1">
+                    <label for="id">Name</label>
+                </div>
+                <div class="input-field col s6">
+                    <input id="category" type="text" class="autocomplete2">
+                    <label for="category">Category</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="field" type="text" class="autocomplete3">
+                    <label for="field">Search Area</label>
+                </div>
+            </div>
+            <!--<div class="row">-->
+            <!--<div class="input-field col s12 field-select">-->
+            <!--<select id="active-field">-->
+            <!--<option value="" disabled selected>Search field</option>-->
+            <!--</select>-->
+            <!--<label>Search Field</label>-->
+            <!--</div>-->
+            <!--</div>-->
+
+            <div class="row">
+                <a class="waves-effect waves-light btn col s6 blue" id="record">Record</a>
+                <a class="waves-effect waves-light btn col s6 blue" id="retrain">Retrain</a>
+            </div>
+
+            <div class="row">
+                <ul id="results-collection" class="collection with-header">
+                    <li class="collection-header"><h5>Results</h5></li>
+                    <li class="collection-item"></li>
+                </ul>
+            </div>
+
+        </form>
+    </div>
+</div>
+
 
 </body>
 </html>

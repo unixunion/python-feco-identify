@@ -124,6 +124,13 @@ def send_js(path):
     return send_from_directory('static', path)
 
 
+@app.route("/visualdb")
+def visualdb():
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+    figure = plt.figure(1, figsize=(27, 5))
+    ax = Axes3D(figure, elev=-150, azim=110)
+
 @app.route("/dbdump")
 def dbdump():
     try:

@@ -1,14 +1,16 @@
 ** Bug Fixes / Improvements **
 
-
+Lost Password recovery
+Registration Email Activation
+3d plot of AI grid
 
 
 ** Features **
 
-New "Searchfield/land" Support and plot/land switching.
 
 
 ** Implemented **
 
 If Depth is ommited, do a dual feature matrix instead of tri feature.
 Update autocomplete(s) when a new object is recorded.
+New "Searchfield/land" Support and plot/land switching.
