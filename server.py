@@ -21,6 +21,7 @@ app.config['DEBUG'] = True
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
 
+# checks a obj is not none or a ""
 def notnull(name, obj):
     print("Checking %s object %s is not None or ''" % (name, obj))
     if obj is not None and obj is not '' and obj is not u"" and obj is not u'':

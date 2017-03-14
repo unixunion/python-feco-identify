@@ -113,7 +113,8 @@
                         findings = findings + " / "
                     }
                 }
-                Materialize.toast(findings, 4000);
+
+                Materialize.toast('<i class="small material-icons">av_timer</i><p>' + new Date().getHours() +"h" + new Date().getMinutes() + ":  " + findings + "</p>", 10000);
                 var node = document.createElement("li");
                 var item;
                 for (x in data['result']) {
@@ -312,15 +313,16 @@
                 <h5>Before you start</h5>
                 <p>
                     This app is utilizing various AI techniques to determine the identify of a object detected with a
-                    metal detector. This tool is designed to rapidly learn and filter out trash from treasure based on search
-                    site.
+                    metal detector. This tool is designed to rapidly learn and filter out trash from treasure in your
+                    search location.
                 </p>
                 <p>
-                    The algorithm is designed to learn about the environment you are searching in by separating similar
-                    signals based on fe/co/depth of objects found on the field which you have logged previously.
+                    The algorithm learns about the environment you are searching in by separating similar
+                    signals based on fe/co/depth of objects found which you have logged previously.
                 </p>
                 <p>
-                    Remember to "retrain" your AI when you change search areas! Edit your "search area" field, click retrain.
+                    Remember to "retrain" your AI when you change search areas! Edit your "search area" field,
+                    and click retrain.
                 </p>
             </li>
 
