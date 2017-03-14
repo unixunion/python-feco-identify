@@ -17,7 +17,6 @@ ai_sessions = {}
 
 # set the project root directory as the static folder, you can set others.
 app = Flask(__name__, static_url_path='')
-app.config['DEBUG'] = True
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
 
@@ -380,4 +379,4 @@ if __name__ == "__main__":
     except Exception, e:
         print("Users table already created")
     # retrain()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)
