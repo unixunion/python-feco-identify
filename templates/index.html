@@ -126,9 +126,12 @@
                         <!--node.appendChild(icon);-->
 
                         var time = document.createElement("p");
-                        time.innerHTML=new Date().getHours() +"h" + (new Date().getMinutes()<10?'0':'') + new Date().getMinutes() + ":  "
+                        time.innerHTML=new Date().getHours() +"h" + (new Date().getMinutes()<10?'0':'') + new Date().getMinutes() + ": FE: " + document.getElementById("fe").value + " CO: " + document.getElementById("co").value + " Depth: " + document.getElementById("depth").value
                         time.appendChild(icon);
                         node.appendChild(time);
+
+
+
                     }
 
                     var item = document.createTextNode(i['result']);
