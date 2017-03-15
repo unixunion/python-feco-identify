@@ -127,7 +127,7 @@
 
                         var time = document.createElement("p");
                         time.innerHTML=new Date().getHours() +"h" + (new Date().getMinutes()<10?'0':'') + new Date().getMinutes() + ":  "
-                        time.append(icon);
+                        time.appendChild(icon);
                         node.appendChild(time);
                     }
 
