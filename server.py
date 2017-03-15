@@ -4,14 +4,10 @@ import sqlite3
 import hashlib
 
 import numpy as np
-from flask import Flask, request, send_from_directory, g, redirect, session, jsonify
+from flask import Flask, request, send_from_directory, g, redirect, session, jsonify, render_template
 from ai import Matrix
 
 DATABASE = 'database.db'
-
-# initialize the Matrix with label=3 ( category ) and max_features=3 inclusive of depth data
-# ai = Matrix(l=3, max_features=3)
-# ai2 = Matrix(l=3, max_features=2)
 
 ai_sessions = {}
 
@@ -30,13 +26,18 @@ def notnull(name, obj):
         raise Exception("%s is empty" % name)
 
 
-"""
-New Auth Stuff
-"""
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Login Route
+
+    Checks auth, and sets up server-side session for user. Handles both GET and POST for presenting
+    the login page, and handling the page posts.
+
+    Also creates the instances of the AI on the server side, in the ai_sessions dictionary
+
+    :return: login page, or result of login
+    """
     print("login")
     if request.method == 'POST':
         data = request.get_json(force=True)
@@ -59,8 +60,23 @@ def login():
 
 @app.route('/logout')
 def logout():
-    # remove the username from the session if it's there
-    session.pop('username', None)
+    """
+    Logout removes the username from the server-side session, and nukes the AI's for the session
+    :return:
+    """
+    try:
+        print("Initiating logout: %s" % session['username'])
+        ai_sessions.pop("%s-ai" % session['username'], None)
+        ai_sessions.pop("%s-ai2" % session['username'], None)
+    except Exception, e:
+        print("Logout could not shutdown AI's")
+
+    try:
+        session.pop('username', None)
+    except KeyError, e:
+        print("User is not logged in")
+
+    print("Successfully logged out")
     return redirect("/login")
 
 
@@ -286,7 +302,8 @@ def root():
 
 
         else:
-            return send_from_directory('static', 'index.html')
+            # return send_from_directory('static', 'index.html')
+            return render_template('index.html', username=session['username'])
     else:
         print("Unknown user")
         return redirect("/login")
