@@ -128,10 +128,10 @@
                         span.className="title right";
                         span.innerHTML=new Date().getHours() +"h" + (new Date().getMinutes()<10?'0':'') + new Date().getMinutes() + ", ferrous: " + document.getElementById("fe").value + ", conductivity: " + document.getElementById("co").value + ", depth: " + document.getElementById("depth").value;
 
-                        var icon = document.createElement("i");
-                        icon.className="tiny material-icons left";
-                        icon.innerHTML="av_timer";
-                        span.appendChild(icon);
+                        <!--var icon = document.createElement("i");-->
+                        <!--icon.className="tiny material-icons left";-->
+                        <!--icon.innerHTML="av_timer";-->
+                        <!--span.appendChild(icon);-->
 
                         <!--node.appendChild(icon);-->
 
@@ -277,6 +277,28 @@
             listitem = document.createElement('li')
 	        listitem.setAttribute('class', 'collection-item avatar');
 
+
+            var button = document.createElement('a');
+            button.innerHTML="Retrain";
+            button.setAttribute('class', 'waves-effect waves-light btn col s3 blue right');
+            button.addEventListener("click", function(data){
+
+            document.getElementById('field').value = record;
+
+                //fields retrain
+                vbutton="retrain";
+                postJSON("", function(data, status){
+                    console.log(data);
+                    Materialize.toast(data['result'], 4000);
+                    vbutton=null;
+                    updateAutoCompleters();
+                });
+
+
+            });
+            listitem.appendChild(button);
+
+
 	        icon = document.createElement('i');
             icon.setAttribute('class', 'material-icons circle');
             icon.innerHTML="folder";
@@ -343,15 +365,15 @@
                 <p>
                     This app is utilizing various AI techniques to determine the identify of a object detected with a
                     metal detector. This tool is designed to rapidly learn and filter out trash from treasure in your
-                    search location.
+                    current search location. Each location can have unique "layers" of objects, and the algorithms depend
+                    on that you catalog these layers.
                 </p>
                 <p>
-                    The algorithm learns about the environment you are searching in by separating similar
-                    signals based on fe/co/depth of objects found which you have logged previously.
+                    The algorithms learns about the environment you are searching in by separating similar
+                    signals based on fe/co/depth of objects found which you have cataloged previously.
                 </p>
                 <p>
-                    Remember to "retrain" your AI when you change search areas! Edit your "search area" field,
-                    and click retrain.
+                    Remember to "retrain" your AI when you switch search areas. This can be done on the "field" view.
                 </p>
             </li>
 
