@@ -125,7 +125,7 @@
                     if (x<1) {
 
                         var span = document.createElement("span");
-                        span.className="title";
+                        span.className="title right";
                         span.innerHTML=new Date().getHours() +"h" + (new Date().getMinutes()<10?'0':'') + new Date().getMinutes() + ", ferrous: " + document.getElementById("fe").value + ", conductivity: " + document.getElementById("co").value + ", depth: " + document.getElementById("depth").value;
 
                         var icon = document.createElement("i");
@@ -141,6 +141,10 @@
                         <!--node.appendChild(icon);-->
                         <!--span.appendChild(time);-->
 
+                        var icon = document.createElement("i");
+                        icon.className="material-icons circle";
+                        icon.innerHTML="search";
+                        node.appendChild(icon);
 
                         node.appendChild(span);
                     }
@@ -148,7 +152,10 @@
                     var item = document.createElement("p");
                     item.innerHTML+=i['result'];
                     <!--var item = document.createTextNode(i['result']);-->
-                    node.className = "collection-item";
+                    node.className = "collection-item avatar";
+
+
+
                     node.appendChild(item);
                     <!--if (x<1) {-->
                         <!--node.appendChild(document.createTextNode(" / "));-->
