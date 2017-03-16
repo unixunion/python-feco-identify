@@ -55,8 +55,8 @@ def login():
         else:
             return '{"result": "error"}'
     else:
-        return send_from_directory('static', 'login.html')
-
+        # return send_from_directory('static', 'login.html')
+        return render_template('login.html')
 
 @app.route('/logout')
 def logout():
@@ -107,8 +107,8 @@ def register():
         except Exception, e:
             return '{"result": "error"}'
     else:
-        return send_from_directory('static', 'register.html')
-
+        # return send_from_directory('static', 'register.html')
+        return render_template('register.html')
 
 @app.before_first_request
 def setup_logging():

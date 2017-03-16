@@ -123,26 +123,36 @@
                     console.log(i['result']);
 
                     if (x<1) {
+
+                        var span = document.createElement("span");
+                        span.className="title";
+                        span.innerHTML=new Date().getHours() +"h" + (new Date().getMinutes()<10?'0':'') + new Date().getMinutes() + ", ferrous: " + document.getElementById("fe").value + ", conductivity: " + document.getElementById("co").value + ", depth: " + document.getElementById("depth").value;
+
                         var icon = document.createElement("i");
-                        icon.className="small material-icons";
+                        icon.className="tiny material-icons left";
                         icon.innerHTML="av_timer";
+                        span.appendChild(icon);
+
                         <!--node.appendChild(icon);-->
 
-                        var time = document.createElement("p");
-                        time.innerHTML=new Date().getHours() +"h" + (new Date().getMinutes()<10?'0':'') + new Date().getMinutes() + ": FE: " + document.getElementById("fe").value + " CO: " + document.getElementById("co").value + " Depth: " + document.getElementById("depth").value
-                        time.appendChild(icon);
-                        node.appendChild(time);
+                        <!--var time = document.createElement("p");-->
+                        <!--time.innerHTML=new Date().getHours() +"h" + (new Date().getMinutes()<10?'0':'') + new Date().getMinutes() + ": FE: " + document.getElementById("fe").value + " CO: " + document.getElementById("co").value + " Depth: " + document.getElementById("depth").value-->
+                        <!--time.appendChild(icon);-->
+                        <!--node.appendChild(icon);-->
+                        <!--span.appendChild(time);-->
 
 
-
+                        node.appendChild(span);
                     }
 
-                    var item = document.createTextNode(i['result']);
+                    var item = document.createElement("p");
+                    item.innerHTML+=i['result'];
+                    <!--var item = document.createTextNode(i['result']);-->
                     node.className = "collection-item";
                     node.appendChild(item);
-                    if (x<1) {
-                        node.appendChild(document.createTextNode(" / "));
-                    }
+                    <!--if (x<1) {-->
+                        <!--node.appendChild(document.createTextNode(" / "));-->
+                    <!--}-->
                 }
                 var list = document.getElementById("results-collection");
                 list.insertBefore(node, list.childNodes[2]);
@@ -438,14 +448,7 @@
                     <label for="field">Search Area</label>
                 </div>
             </div>
-            <!--<div class="row">-->
-            <!--<div class="input-field col s12 field-select">-->
-            <!--<select id="active-field">-->
-            <!--<option value="" disabled selected>Search field</option>-->
-            <!--</select>-->
-            <!--<label>Search Field</label>-->
-            <!--</div>-->
-            <!--</div>-->
+
 
             <div class="row">
                 <a class="waves-effect waves-light btn col s12 blue" id="record">Record</a>
