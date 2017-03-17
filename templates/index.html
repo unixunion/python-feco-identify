@@ -369,51 +369,59 @@
             <li>
                 <h5>Before you start</h5>
                 <p>
-                    This app is utilizing various AI techniques to determine the identify of a object detected with a
-                    metal detector. This tool is designed to rapidly learn and filter out trash from treasure in your
-                    current search location. Each location can have unique "layers" of objects, and the algorithms depend
+                    This app is leveraging various AI learning techniques to determine the identity of a object detected with a
+                    metal detector. This tool is designed to learn and filter out trash from treasure in your current
+                    immediate search location. Each location can have unique "layers" of objects, and the algorithms depend
                     on that you catalog these layers.
-                </p>
-                <p>
-                    The algorithms learns about the environment you are searching in by separating similar
-                    signals based on fe/co/depth of objects found which you have cataloged previously.
-                </p>
-                <p>
-                    Remember to "retrain" your AI when you switch search areas. This can be done on the "field" view.
                 </p>
             </li>
 
             <li>
-                <h5>fields, names and categories</h5>
+                <h5>Getting Started</h5>
                 <p>
-                    When logging finds, it is very important that you catalog the finds. Cataloging is achieved by entering
-                    the fe, co, depth, name, category and search area into the "Detect" view, and clicking "record".
+                    Launch the UI, and select your active field in the "areas" tab.</p>
+                <p>
+                    If this is your first time running, you will have a empty database. You probably want to  "record"
+                    that name:iron and category:iron is at 35:50 ( etrac ) at a detected depth of 10cm. If you have a
+                    different detector, use the FE:CO:Depth that your detector detects iron on.
                 </p>
                 <p>
-                    The name, category and search area boxes will autocomplete once you have something in the database.
+                    Initially the database is completely untrained, so its completely up to you to populate it with the results
+                    of digs. You will want to dig some trash to confirm is trash, and "record" that into the DB.
+                </p>
+            </li>
+
+            <li>
+                <h5>Areas, names and categories</h5>
+                <p>
+                    When your retrieve a find, you catalog it. Cataloging is achieved by entering the fe, co, depth, name,
+                    category and search area into the "Detect" view, and pressing "record".
                 </p>
                 <p>
                     the "name" field is the fully fledged name of the object. e.g "2/3 skillning 1836".
-                    the "category" field is the object filter used by the AI, e.g. "bronze coin". Try not use more than 8
-                    categories for a field, examples of categories are: silver coin, bronze coin, picnic trash, copper coin, CuNi coin
+                    the "category" field is the object filter as used by the AI, e.g. "bronze coin". Try not use more than 10
+                    categories for a field, examples of categories are:
+                    <ul>
+                        <li>silver coin</li>
+                        <li>bronze coin</li>
+                        <li>picnic trash</li>
+                        <li>small copper coin</li>
+                        <li>small CuNi coin</li>
+
+                    </ul>
                 </p>
+
+                <p>
+                    The name, category and search area boxes will autocomplete once you have something in the database.
+                </p>
+
                 <p>
                     Try not to categorize objects with wildly different FE/CO numbers together, since this casts a wider
-                    net when the algorithm is solving a find.
+                    net when the algorithm is solving a find. For instance, make the distinctions between
+                    "large copper coin" and "small copper coin".
                 </p>
             </li>
 
-            <li>
-                <h5>Start Training</h5>
-                <li>
-                    <p>By Default, there is no data in your database, finds, and their data are created as you "log" finds.</p>
-                </li>
-                <p>Pull out your detector, and go detecting on your search site. When you find a object of "interest", note its
-                    FE, CO and Depth values as detected by your detector before digging it out. Once you dig it out, log it
-                    by entering FE, CO, Depth, Name and a "Category" in the "Detect" view of the app.
-                </p>
-                <img class="responsive-img" src="/static/img/recording.png">
-            </li>
 
             <li>
                 <h5>Guessing</h5>
@@ -429,8 +437,8 @@
            <li>
                 <h5>Retraining / Field Selection</h5>
                 <p>
-                    Before you resume searching a site enter your search area name, and click "retrain". If you want to
-                    use your global database ignoring fields specific data, clear "search area" and click "retrain"
+                    Before you resume searching a site, remember to select your search area from the "Areas" tab, and clicking
+                    "retrain"
                 </p>
             </li>
 
