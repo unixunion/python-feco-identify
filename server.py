@@ -120,6 +120,8 @@ def register():
         app.logger.info("registration attempt")
         try:
             data = request.get_json(force=True)
+            notnull("username", data["username"])
+            notnull("password", data["password"])
             query = 'INSERT INTO users (email, password) VALUES ("%s", "%s")' % (
                 data['username'], hashlib.sha224(data['password']).hexdigest())
             cur = get_db().execute(query)
