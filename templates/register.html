@@ -19,7 +19,7 @@
 <body>
 
 <div class="row">
-    <form class="col s12">
+    <form id="registerform" class="col s12">
 
         <div class="row">
             <div class="input-field col s12">
@@ -57,7 +57,11 @@ $(document).ready(function() {
 
         // POST for the form contents and which button is pressed
         var loginFunction = function(url, callback) {
-            if (document.getElementById("password").value == document.getElementById("password2").value) {
+
+            if (document.getElementById("username").validity.typeMismatch) {
+                console.log("Bad email");
+                return;
+            } else if (document.getElementById("password").value == document.getElementById("password2").value) {
                 return jQuery.ajax({
                     'type': 'POST',
                     'url': url,
@@ -79,8 +83,12 @@ $(document).ready(function() {
             console.log("submit");
             loginFunction("/register", function(data, status){
                 console.log(data['result']);
+
                 if (data['result']=="ok") {
+                    alert("Please check your mail for activation link");
                     window.location="/login";
+                } else {
+                    alert("An error occured");
                 }
             });
         }, false);

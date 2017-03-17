@@ -298,7 +298,7 @@
                 vbutton="retrain";
                 postJSON("", function(data, status){
                     console.log(data);
-                    Materialize.toast(data['result'], 4000);
+                    <!--Materialize.toast(data['result'], 4000);-->
                     vbutton=null;
                     updateAutoCompleters();
                     document.getElementById("modalheader").innerHTML="AI Retrain";

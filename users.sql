@@ -1,1 +1,1 @@
-CREATE TABLE users (email VARCHAR(64) NOT NULL , password VARCHAR(64) NOT NULL, CONSTRAINT email_unique UNIQUE (email));
+CREATE TABLE users (isactive BOOLEAN NOT NULL CHECK (isactive IN (0,1)), email VARCHAR(64) NOT NULL, emailhash VARCHAR(256) NOT NULL, password VARCHAR(64) NOT NULL, CONSTRAINT email_unique UNIQUE (email));

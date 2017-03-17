@@ -3,9 +3,13 @@ import logging
 import sqlite3
 import hashlib
 from logging.handlers import RotatingFileHandler
-
+import os
 import numpy as np
 from flask import Flask, request, send_from_directory, g, redirect, session, jsonify, render_template
+from flask_mail import Mail, Message
+
+import random
+
 from ai import Matrix
 
 DATABASE = 'database.db'
@@ -17,6 +21,17 @@ ai_sessions = {}
 # set the project root directory as the static folder, you can set others.
 app = Flask(__name__, static_url_path='')
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
+
+app.config.update(
+    DEBUG=True,
+    # EMAIL SETTINGS
+    MAIL_SERVER='smtp.gmail.com',
+    MAIL_PORT=465,
+    MAIL_USE_SSL=True,
+    MAIL_USERNAME=os.environ['GUN'],
+    MAIL_PASSWORD=os.environ['GPW']
+)
+mail = Mail(app)
 
 
 # Custom logging
@@ -107,12 +122,11 @@ def check_auth(username, password):
     pw224 = hashlib.sha224(password).hexdigest()
     # return username == 'keghol' and password == 'co1n'
     dbdata = query_db(
-        "SELECT email, password FROM users WHERE email = '%s' AND password = '%s'" % (username, pw224))
+        "SELECT email, password FROM users WHERE email = '%s' AND password = '%s' AND isactive = 1" % (username, pw224))
     if dbdata:
         return True
     else:
         return False
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -122,11 +136,13 @@ def register():
             data = request.get_json(force=True)
             notnull("username", data["username"])
             notnull("password", data["password"])
-            query = 'INSERT INTO users (email, password) VALUES ("%s", "%s")' % (
-                data['username'], hashlib.sha224(data['password']).hexdigest())
+            token = random.getrandbits(128)
+            query = 'INSERT INTO users (isactive, email, emailhash, password) VALUES (0, "%s", "%s", "%s")' % (
+                data['username'], token, hashlib.sha224(data['password']).hexdigest())
             cur = get_db().execute(query)
             get_db().commit()
             app.logger.info("user specifics: %s" % data)
+            activationemail(data['username'], token)
             return '{"result": "ok"}'
         except Exception, e:
             app.logger.error("error registering user, %s" % e.message)
@@ -134,6 +150,27 @@ def register():
     else:
         # return send_from_directory('static', 'register.html')
         return render_template('register.html')
+
+
+
+@app.route("/activateuser/<string:hash>", methods=['GET'])
+def activateuser(hash):
+    app.logger.info("activating user with hash: %s" % hash)
+    dbdata = query_db("SELECT rowid FROM users WHERE emailhash = '%s'" % hash)
+    app.logger.info("activate user %s" % dbdata)
+    app.logger.info(dbdata)
+
+    if dbdata:
+        app.logger.info("success")
+        query = 'UPDATE users SET isactive = 1 WHERE rowid = "%s"' % dbdata[0]
+        cur = get_db().execute(query)
+        get_db().commit()
+        cur.close()
+        return redirect("/")
+    else:
+        app.logger.info("error")
+        return redirect("/")
+
 
 
 @app.before_first_request
@@ -245,6 +282,17 @@ def categories():
     except Exception, e:
         app.logger.error("error retrieving categories, %s" % e.message)
         return redirect("/login")
+
+
+def activationemail(email, token):
+    msg = Message(
+        'Deblox Intelligence Activation',
+        sender='vendors@kegans.com',
+        recipients=
+        [email])
+    msg.body = render_template("mail.html", email=email, token=token)
+    mail.send(msg)
+    return "Sent"
 
 
 @app.route("/", methods=['GET', 'POST'])
@@ -363,22 +411,7 @@ def commit_db(query, args=(), one=False):
     get_db().commit()
 
 
-# creates the initial schema
-def init_db():
-    with app.app_context():
-        db = get_db()
-        with app.open_resource('schema.sql', mode='r') as f:
-            db.cursor().executescript(f.read())
-        db.commit()
 
-
-# creates user schema
-def create_users():
-    with app.app_context():
-        db = get_db()
-        with app.open_resource('users.sql', mode='r') as f:
-            db.cursor().executescript(f.read())
-        db.commit()
 
 
 # retrains the AI for the selected field
@@ -422,6 +455,26 @@ def retrain_session(field):
         app.logger.info("ai retrained successfully")
 
 
+# creates the initial schema
+def init_db():
+    with app.app_context():
+        db = get_db()
+        with app.open_resource('schema.sql', mode='r') as f:
+            db.cursor().executescript(f.read())
+        db.commit()
+
+
+# creates user schema
+def create_users():
+    with app.app_context():
+        db = get_db()
+        with app.open_resource('users.sql', mode='r') as f:
+            db.cursor().executescript(f.read())
+        db.commit()
+
+
+
+
 if __name__ == "__main__":
 
     handler = RotatingFileHandler('server.log', maxBytes=100000000, backupCount=5)
@@ -434,11 +487,13 @@ if __name__ == "__main__":
     try:
         init_db()
     except Exception, e:
-        print("DB Already initialized")
+        print("DB Already initialized: %s" % e.message)
 
     try:
         create_users()
     except Exception, e:
-        print("Users table already created")
+        print("Users table already created: %s" % e.message)
+
+
     # retrain()
     app.run(host='0.0.0.0', port=5000)
