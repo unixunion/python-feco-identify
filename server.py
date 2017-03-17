@@ -2,12 +2,15 @@ import json
 import logging
 import sqlite3
 import hashlib
+from logging.handlers import RotatingFileHandler
 
 import numpy as np
 from flask import Flask, request, send_from_directory, g, redirect, session, jsonify, render_template
 from ai import Matrix
 
 DATABASE = 'database.db'
+
+LOGFORMAT = '%(asctime)-15s [%(username)s] %(filename)s %(module)s:%(lineno)d - %(message)s'
 
 ai_sessions = {}
 
@@ -16,13 +19,29 @@ app = Flask(__name__, static_url_path='')
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
 
+# Custom logging
+class ContextFilter(logging.Filter):
+    """
+    This is a filter which injects contextual information into the log.
+    """
+
+    def filter(self, record):
+        # with app.app_context():
+        try:
+            record.username = session['username']
+            return True
+        except KeyError, e:
+            record.username = "NOT LOGGED IN"
+            return True
+
+
 # checks a obj is not none or a ""
 def notnull(name, obj):
-    print("Checking %s object %s is not None or ''" % (name, obj))
+    app.logger.info("checking %s object %s is not None or ''" % (name, obj))
     if obj is not None and obj is not '' and obj is not u"" and obj is not u'':
         return
     else:
-        print("%s is not set" % name)
+        app.logger.debug("%s is not set" % name)
         raise Exception("%s is empty" % name)
 
 
@@ -38,12 +57,11 @@ def login():
 
     :return: login page, or result of login
     """
-    print("login")
     if request.method == 'POST':
         data = request.get_json(force=True)
-        print(data)
+        app.logger.info("user login request with data: %s" % data)
         if check_auth(data['username'], data['password']):
-            print("Login Success")
+            app.logger.info("%s, login success" % data['username'])
             session['username'] = data['username']
             ai_sessions["%s-ai" % session['username']] = Matrix(l=3, max_features=3)
             ai_sessions["%s-ai2" % session['username']] = Matrix(l=3, max_features=2)
@@ -53,10 +71,12 @@ def login():
                 return '{"result": "ok"}'
             return '{"result": "ok"}'
         else:
+            app.logger.error("error logging in with data: %s" % data)
             return '{"result": "error"}'
     else:
-        # return send_from_directory('static', 'login.html')
+        app.logger.info("returning login page")
         return render_template('login.html')
+
 
 @app.route('/logout')
 def logout():
@@ -65,18 +85,18 @@ def logout():
     :return:
     """
     try:
-        print("Initiating logout: %s" % session['username'])
+        app.logger.info("initiating logout: %s" % session['username'])
         ai_sessions.pop("%s-ai" % session['username'], None)
         ai_sessions.pop("%s-ai2" % session['username'], None)
     except Exception, e:
-        print("Logout could not shutdown AI's")
+        app.logger.error("logout could not shutdown AI's, %s" % e.message)
 
     try:
         session.pop('username', None)
     except KeyError, e:
-        print("User is not logged in")
+        app.logger.error("user is not logged in, %s" % e.message)
 
-    print("Successfully logged out")
+    app.logger.info("successfully logged out")
     return redirect("/login")
 
 
@@ -97,18 +117,22 @@ def check_auth(username, password):
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
+        app.logger.info("registration attempt")
         try:
             data = request.get_json(force=True)
             query = 'INSERT INTO users (email, password) VALUES ("%s", "%s")' % (
                 data['username'], hashlib.sha224(data['password']).hexdigest())
             cur = get_db().execute(query)
             get_db().commit()
+            app.logger.info("user specifics: %s" % data)
             return '{"result": "ok"}'
         except Exception, e:
+            app.logger.error("error registering user, %s" % e.message)
             return '{"result": "error"}'
     else:
         # return send_from_directory('static', 'register.html')
         return render_template('register.html')
+
 
 @app.before_first_request
 def setup_logging():
@@ -140,20 +164,15 @@ def send_js(path):
     return send_from_directory('static', path)
 
 
-@app.route("/visualdb")
-def visualdb():
-    import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D
-    figure = plt.figure(1, figsize=(27, 5))
-    ax = Axes3D(figure, elev=-150, azim=110)
-
 @app.route("/dbdump")
 def dbdump():
+    app.logger.info("dbdump request")
     try:
         dbdata = query_db(
             "SELECT rowid, fe, co, depth, id, category, fieldid from feco WHERE userid IS '%s' ORDER BY rowid DESC" %
             session['username'])
-        print(dbdata)
+        app.logger.info("dumping database contents")
+        app.logger.info(dbdata)
         return json.dumps(dbdata)
     except Exception, e:
         return json.dumps(
@@ -162,6 +181,7 @@ def dbdump():
 
 @app.route("/delete/<int:rowid>")
 def delete(rowid):
+    app.logger.info("request to delete record %s" % rowid)
     try:
         commit_db('DELETE FROM feco where ROWID = "%s" AND USERID = "%s"' % (rowid, session['username']))
         return json.dumps({"result": "ok"})
@@ -171,48 +191,49 @@ def delete(rowid):
 
 @app.route("/ids")
 def ids():
+    app.logger.info("getting ids")
     l = {}
     try:
         for k in ai_sessions["%s-ai" % session['username']].mydata.target_names:
             l[k] = None
         return json.dumps(l)
     except Exception, e:
+        app.logger.error("error getting ids: %s" % e.message)
         return redirect("/login")
 
 
 @app.route("/fields")
 def fields():
-    print("Getting fields")
+    app.logger.info("getting fields")
     fl = {}
     try:
         list_fields = query_db('Select DISTINCT fieldid from feco WHERE userid IS "%s"' % session['username'])
-        print("List of fields: %s" % list_fields)
+        app.logger.info("db returned list of fields: %s" % list_fields)
         for f in list_fields:
             fl[f[0]] = None
         return json.dumps(fl)
     except Exception, e:
-        print(e.message)
+        app.logger.error("error getting fields: %s" % e.message)
         return redirect("/login")
 
 
 @app.route("/fieldlist")
 def fieldlist():
-    print("Getting fields")
+    app.logger.info("getting fieldlist")
     fl = []
     fl.append("All Fields")
     try:
         list_fields = query_db('Select DISTINCT fieldid from feco WHERE userid IS "%s"' % session['username'])
-        print("List of fields: %s" % list_fields)
+        app.logger.info("db returned list of fields: %s" % list_fields)
         for f in list_fields:
             fl.append(f)
         return json.dumps(fl)
     except Exception, e:
-        print(e.message)
+        app.logger.error("error getting field list: %s" % e.message)
         return redirect("/login")
 
 
 @app.route("/categories")
-# @requires_auth
 def categories():
     l = {}
     try:
@@ -220,14 +241,15 @@ def categories():
             l[k] = None
         return json.dumps(l)
     except Exception, e:
+        app.logger.error("error retrieving categories, %s" % e.message)
         return redirect("/login")
 
 
 @app.route("/", methods=['GET', 'POST'])
 def root():
-    print("Root")
+    app.logger.info("Root")
     if 'username' in session:
-        print("User %s is logged in" % session['username'])
+        app.logger.info("User %s is logged in" % session['username'])
         try:
             notnull("ai", ai_sessions["%s-ai" % session['username']])
             notnull("ai2", ai_sessions["%s-ai2" % session['username']])
@@ -235,9 +257,9 @@ def root():
             return redirect("/login")
 
         if request.method == 'POST':
-            # print("post")
+            # app.logger.info("post")
             data = request.get_json(force=True)
-            print(data)
+            app.logger.info(data)
 
             if (data['button'] == 'record'):
                 try:
@@ -247,7 +269,7 @@ def root():
                     notnull("name", data['id'])
                     notnull("category", data['category'])
                     notnull("field", data['field'])
-                    print("Recording findings: %s" % data)
+                    app.logger.info("Recording findings: %s" % data)
                     try:
                         insert(data['fe'], data['co'], data['depth'], data['id'], data['category'], session['username'],
                                data['field'])
@@ -263,13 +285,13 @@ def root():
                 appr = {}
 
                 try:
-                    print("Guessing: %s" % data)
+                    app.logger.info("Guessing: %s" % data)
                     notnull("fe", data['fe'])
                     notnull("co", data['co'])
 
                     if data['depth']:
                         for name, clf in ai_sessions["%s-ai" % session['username']].compiled_classifiers:
-                            print("Depth set, so 3 feature testing")
+                            app.logger.info("Depth set, so 3 feature testing")
                             appr = {"classifier": name,
                                     "result": ai_sessions["%s-ai" % session['username']].mydata.target_data[
                                         clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[
@@ -278,16 +300,16 @@ def root():
                             results.append(json.dumps(appr))
                     else:
                         for name, clf in ai_sessions["%s-ai2" % session['username']].compiled_classifiers:
-                            print("2 feature testing")
+                            app.logger.info("2 feature testing")
                             appr = {"classifier": name,
                                     "result": ai_sessions["%s-ai2" % session['username']].mydata.target_data[
                                         clf.predict(np.array([data['fe'], data['co']]).reshape(1, -1))[0]]
                                     }
                             results.append(json.dumps(appr))
-                    print(results)
+                    app.logger.info(results)
                     return '{"result": %s }' % json.dumps(results)
                 except Exception, e:
-                    print("fe/co not set")
+                    app.logger.info("fe/co not set")
                     results.append(json.dumps({"result": "%s" % e.message}))
                     return '{"result": %s }' % json.dumps(results)
             elif data['button'] == 'retrain':
@@ -306,10 +328,11 @@ def root():
             # return send_from_directory('static', 'index.html')
             return render_template('index.html', username=session['username'])
     else:
-        print("Unknown user")
+        app.logger.info("unknown user")
         return redirect("/login")
 
 
+# write a find to the db
 def insert(fe, co, depth, id, category, userid, field):
     with app.app_context():
         # g.db is the database connection
@@ -323,6 +346,7 @@ def insert(fe, co, depth, id, category, userid, field):
         return id
 
 
+# select something from the DB
 def query_db(query, args=(), one=False):
     with app.app_context():
         cur = get_db().execute(query, args)
@@ -331,11 +355,13 @@ def query_db(query, args=(), one=False):
         return (rv[0] if rv else None) if one else rv
 
 
+# commit something to DB
 def commit_db(query, args=(), one=False):
     get_db().execute(query, args)
     get_db().commit()
 
 
+# creates the initial schema
 def init_db():
     with app.app_context():
         db = get_db()
@@ -344,6 +370,7 @@ def init_db():
         db.commit()
 
 
+# creates user schema
 def create_users():
     with app.app_context():
         db = get_db()
@@ -352,41 +379,56 @@ def create_users():
         db.commit()
 
 
+# retrains the AI for the selected field
 def retrain_session(field):
-    print('Retraining, field is %s' % field)
-    print(type(field))
+    app.logger.info('Retraining, field is %s' % field)
     with app.app_context():
         dbdata = []
         if field is u'' or field == u'All Fields':
-            print("No Field, loading all datasets")
+            app.logger.info("Global Field selected, loading all datasets")
             dbdata = query_db("SELECT fe, co, depth, id, category from feco WHERE userid IS '%s'" % session['username'])
         else:
-            print("Narrowing field to %s" % field)
+            app.logger.info("Specific Field: %s selected, loading limited dataset" % field)
             dbdata = query_db(
                 "SELECT fe, co, depth, id, category from feco WHERE userid IS '%s' AND fieldid IS '%s'" % (
                     session['username'], field))
-        print("Dumping DB")
-        print(dbdata)
+
+        app.logger.info("dumping DB contents")
+        app.logger.info(dbdata)
 
         # new AI sessions
+        app.logger.info("instantiate matricies")
         ai_sessions["%s-ai" % session['username']] = Matrix(l=3, max_features=3)
         ai_sessions["%s-ai2" % session['username']] = Matrix(l=3, max_features=2)
 
+        app.logger.info("iterating over dataset and appending to Matrices")
         for rec in dbdata:
-            print(list(rec))
             ai_sessions["%s-ai" % session['username']].mydata.da.append(list(rec))
             ai_sessions["%s-ai2" % session['username']].mydata.da.append(list(rec))
-        print("Ai data:")
-        print(ai_sessions["%s-ai" % session['username']].mydata.da)
 
+        app.logger.info("dumping ai dataset")
+        app.logger.info(ai_sessions["%s-ai" % session['username']].mydata.da)
+
+        app.logger.info("dumping ai2 dataset")
+        app.logger.info(ai_sessions["%s-ai2" % session['username']].mydata.da)
+
+        app.logger.info("rebuilding both 2nd and 3rd dimensional ai for datasets")
         ai_sessions["%s-ai" % session['username']].mydata.rebuild(l=4)
         ai_sessions["%s-ai" % session['username']].rebuild()
-
         ai_sessions["%s-ai2" % session['username']].mydata.rebuild(l=4)
         ai_sessions["%s-ai2" % session['username']].rebuild()
+        app.logger.info("ai retrained successfully")
 
 
 if __name__ == "__main__":
+
+    handler = RotatingFileHandler('server.log', maxBytes=100000000, backupCount=5)
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter(LOGFORMAT)
+    handler.setFormatter(formatter)
+    handler.addFilter(ContextFilter())
+    app.logger.addHandler(handler)
+
     try:
         init_db()
     except Exception, e:
