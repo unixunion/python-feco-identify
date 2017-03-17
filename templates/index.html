@@ -115,8 +115,9 @@
                     }
                 }
 
-                document.getElementById("guessresults").innerHTML=findings;
-                 $('#modal1').modal('open');
+                document.getElementById("modalheader").innerHTML="Classification";
+                document.getElementById("modalview").innerHTML=findings;
+                $('#modal1').modal('open');
 
                 <!--Materialize.toast('<i class="small material-icons">av_timer</i><p>' + new Date().getHours() +"h" + (new Date().getMinutes()<10?'0':'') + new Date().getMinutes() + ":  " + findings + "</p>", 10000);-->
                 var node = document.createElement("li");
@@ -174,12 +175,14 @@
         document.getElementById("record").addEventListener("click", function(data) {
             console.log("record");
             vbutton='record';
-
             postJSON("", function(data, status){
                 console.log(data);
                 Materialize.toast(data['result'], 4000);
                 vbutton=null;
                 updateAutoCompleters();
+                document.getElementById("modalheader").innerHTML="AI Record";
+                document.getElementById("modalview").innerHTML=data['result'];
+                $('#modal1').modal('open');
             });
 
         }, false);
@@ -527,8 +530,8 @@
   <!-- Modal Structure -->
   <div id="modal1" class="modal">
     <div class="modal-content">
-      <h4>Results</h4>
-      <p id="guessresults">Unknown</p>
+      <h4 id="modalheader"></h4>
+      <p id="modalview">Unknown</p>
     </div>
     <div class="modal-footer">
       <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Dismiss</a>
