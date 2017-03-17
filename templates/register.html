@@ -38,13 +38,24 @@
         <div class="row">
             <div class="input-field col s12">
                 <input id="password2" type="password" class="validate">
-                <label for="password2">Password</label>
+                <label for="password2">Password Again</label>
             </div>
         </div>
 
+
+        <input id="token" type="hidden" value="{{ token }}">
+
+
         <div class="row">
-            <a class="waves-effect waves-light btn col s6 blue" id="submit" type="submit">Register</a>
+            {% if not token %}
+                <a class="waves-effect waves-light btn col s6 blue" id="submit" type="submit">Register</a>
+            {% else %}
+                <a class="waves-effect waves-light btn col s6 blue" id="submit" type="submit">Change Password</a>
+            {% endif %}
+
         </div>
+
+
 
     </form>
 </div>
@@ -68,30 +79,17 @@ $(document).ready(function() {
                     'contentType': 'application/json',
                     'data': JSON.stringify({
                         "username": document.getElementById("username").value,
-                        "password": document.getElementById("password").value
+                        "password": document.getElementById("password").value,
+                        "token": document.getElementById("token").value
                     }),
                     'dataType': 'json',
                     'success': callback
                 });
             } else {
                 console.log("Password missmatch");
+                alert("Password Missmatch");
             }
         }
-
-        // record a find button listener
-        document.getElementById("submit").addEventListener("click", function(data) {
-            console.log("submit");
-            loginFunction("/register", function(data, status){
-                console.log(data['result']);
-
-                if (data['result']=="ok") {
-                    alert("Please check your mail for activation link");
-                    window.location="/login";
-                } else {
-                    alert("An error occured");
-                }
-            });
-        }, false);
 
 
         // on enter in the password field, login
@@ -104,9 +102,38 @@ $(document).ready(function() {
         });
 
 
+        // record a find button listener
+        document.getElementById("submit").addEventListener("click", function(data) {
+            console.log("submit");
+            loginFunction("/register", function(data, status){
+                console.log(data['result']);
+                if (data['result']=="ok") {
+                    alert("Please check your email");
+                    window.location="/login";
+                } else if (data['result']=="reset") {
+                    alert("Password reset");
+                    window.location="/login";
+                } else {
+                    alert("An error occured");
+                }
+            });
+        }, false);
+
 
 });
 </script>
+
+
+{% if token %}
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+    document.getElementById("username").disabled=true
+});
+</script>
+
+{% endif %}
 
 
 </body>

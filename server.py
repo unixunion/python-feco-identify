@@ -7,6 +7,7 @@ import os
 import numpy as np
 from flask import Flask, request, send_from_directory, g, redirect, session, jsonify, render_template
 from flask_mail import Mail, Message
+import time
 
 import random
 
@@ -128,22 +129,32 @@ def check_auth(username, password):
     else:
         return False
 
+
+# new user registration
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         app.logger.info("registration attempt")
         try:
             data = request.get_json(force=True)
-            notnull("username", data["username"])
-            notnull("password", data["password"])
-            token = random.getrandbits(128)
-            query = 'INSERT INTO users (isactive, email, emailhash, password) VALUES (0, "%s", "%s", "%s")' % (
-                data['username'], token, hashlib.sha224(data['password']).hexdigest())
-            cur = get_db().execute(query)
-            get_db().commit()
-            app.logger.info("user specifics: %s" % data)
-            activationemail(data['username'], token)
-            return '{"result": "ok"}'
+
+            try:
+                notnull("token", data["token"])
+                commit_db("UPDATE users SET password = '%s' WHERE emailhash='%s'" % (hashlib.sha224(data['password']).hexdigest(), data["token"]))
+                return '{"result": "reset"}'
+
+            except Exception, e:
+
+                notnull("username", data["username"])
+                notnull("password", data["password"])
+                token = random.getrandbits(128)
+                query = 'INSERT INTO users (isactive, email, emailhash, password) VALUES (0, "%s", "%s", "%s")' % (
+                    data['username'], token, hashlib.sha224(data['password']).hexdigest())
+                cur = get_db().execute(query)
+                get_db().commit()
+                app.logger.info("user specifics: %s" % data)
+                activationemail(data['username'], token)
+                return '{"result": "ok"}'
         except Exception, e:
             app.logger.error("error registering user, %s" % e.message)
             return '{"result": "error"}'
@@ -151,6 +162,42 @@ def register():
         # return send_from_directory('static', 'register.html')
         return render_template('register.html')
 
+
+# initiate lost password process
+@app.route("/lostpass", methods=['POST'])
+def lostpass():
+    if request.method == "POST":
+        app.logger.info("lostpassword request")
+        try:
+            data = request.get_json(force=True)
+            notnull("username", data["username"])
+            token = random.getrandbits(128)
+            commit_db("UPDATE users SET emailhash = '%s' WHERE email='%s'" % (token, data["username"]))
+            app.logger.info("token updated for username %s" % data["username"])
+            lostpasswordemail(data["username"], token)
+            return '{"result": "ok"}'
+
+        except Exception, e:
+            app.logger.error("error initiating password recovery for data: %s, error was: %s" % (data, e.message))
+            return '{"result": "error"}'
+
+
+@app.route("/passwordreset/<string:token>", methods=['GET'])
+def passwordrecovery(token):
+    app.logger.info("password reset")
+    try:
+        # data = request.get_json(force=True)
+        notnull("token", token)
+        dbdata = query_db(
+            "SELECT rowid,email FROM users WHERE emailhash = '%s'" % token)
+        time.sleep(2)
+        if dbdata:
+            return render_template("register.html", token=token)
+        else:
+            return render_template("register.html")
+    except Exception, e:
+        app.logger.error("password reset failed: %s" % e)
+        return render_template("register.html")
 
 
 @app.route("/activateuser/<string:hash>", methods=['GET'])
@@ -170,7 +217,6 @@ def activateuser(hash):
     else:
         app.logger.info("error")
         return redirect("/")
-
 
 
 @app.before_first_request
@@ -295,6 +341,17 @@ def activationemail(email, token):
     return "Sent"
 
 
+def lostpasswordemail(email, token):
+    msg = Message(
+        'Deblox Intelligence Lost Password',
+        sender='vendors@kegans.com',
+        recipients=
+        [email])
+    msg.body = render_template("lostpassword.html", email=email, token=token)
+    mail.send(msg)
+    return "Sent"
+
+
 @app.route("/", methods=['GET', 'POST'])
 def root():
     app.logger.info("Root")
@@ -407,11 +464,10 @@ def query_db(query, args=(), one=False):
 
 # commit something to DB
 def commit_db(query, args=(), one=False):
-    get_db().execute(query, args)
-    get_db().commit()
-
-
-
+    with app.app_context():
+        cur = get_db().execute(query, args)
+        get_db().commit()
+        cur.close()
 
 
 # retrains the AI for the selected field
@@ -473,8 +529,6 @@ def create_users():
         db.commit()
 
 
-
-
 if __name__ == "__main__":
 
     handler = RotatingFileHandler('server.log', maxBytes=100000000, backupCount=5)
@@ -493,7 +547,6 @@ if __name__ == "__main__":
         create_users()
     except Exception, e:
         print("Users table already created: %s" % e.message)
-
 
     # retrain()
     app.run(host='0.0.0.0', port=5000)
