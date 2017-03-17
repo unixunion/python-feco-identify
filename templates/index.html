@@ -184,20 +184,20 @@
 
         }, false);
 
-        // retrain button listener
-        document.getElementById("retrain").addEventListener("click", function(data) {
-            console.log("retrain");
-            vbutton='retrain';
+        <!--// retrain button listener-->
+        <!--document.getElementById("retrain").addEventListener("click", function(data) {-->
+            <!--console.log("retrain");-->
+            <!--vbutton='retrain';-->
 
-            postJSON("", function(data, status){
-                console.log(data);
-                Materialize.toast(data['result'], 4000);
-                vbutton=null;
-                updateAutoCompleters();
+            <!--postJSON("", function(data, status){-->
+                <!--console.log(data);-->
+                <!--Materialize.toast(data['result'], 4000);-->
+                <!--vbutton=null;-->
+                <!--updateAutoCompleters();-->
 
-            });
+            <!--});-->
 
-        }, false);
+        <!--}, false);-->
 
 
         // calls a url and passes results to a function
@@ -349,104 +349,174 @@
 
 </nav>
 
-<div id="database" class="col s12">
+<div id="database" class="container">
     <div class="row">
-        <ul class="collection" id="db-collection">
+        <ul class="collection col s12" id="db-collection">
         </ul>
     </div>
 </div>
 
-<div id="logout">
+<div id="logout" class="container">
     <div class="row"></div>
     <div class="row">
         <a class="waves-effect waves-light btn col s12 blue" id="logoutbutton" href="/logout">Logout</a>
     </div>
 </div>
 
-<div id="help" class="col s12">
+<div id="help" class="container">
     <div class="row">
-        <ul class="collection">
+        <ul class="collapsible popout col s12" data-collapsible="accordion">
             <li>
-                <h5>Before you start</h5>
-                <p>
-                    This app is leveraging various AI learning techniques to determine the identity of a object detected with a
-                    metal detector. This tool is designed to learn and filter out trash from treasure in your current
-                    immediate search location. Each location can have unique "layers" of objects, and the algorithms depend
-                    on that you catalog these layers.
-                </p>
+                <div class="collapsible-header">
+                    <i class="material-icons">filter_drama</i>
+                    About Detectorists Intelligence
+                </div>
+                <div class="collapsible-body">
+                    <span>
+                    <p>
+                        DI leverages simultaneous AI learning techniques to determine the identity of a object detected with
+                        your metal detector. The AI learns about the area you are searching, and learns to filter out trash from
+                        treasure which share overlapping FE:CO values.
+                    </p>
+                    <p>
+                        Every location has its own history, and as a result has distinct "layers" of objects. For example,
+                        a park might have a "picnic trash" layer down to 4cm.
+                    </p>
+                    </span>
+                </div>
             </li>
 
             <li>
-                <h5>Getting Started</h5>
-                <p>
-                    Launch the UI, and select your active field in the "areas" tab.</p>
-                <p>
-                    If this is your first time running, you will have a empty database. You probably want to  "record"
-                    that name:iron and category:iron is at 35:50 ( etrac ) at a detected depth of 10cm. If you have a
-                    different detector, use the FE:CO:Depth that your detector detects iron on.
-                </p>
-                <p>
-                    Initially the database is completely untrained, so its completely up to you to populate it with the results
-                    of digs. You will want to dig some trash to confirm is trash, and "record" that into the DB.
-                </p>
-            </li>
+                <div class="collapsible-header">
+                    <i class="material-icons">filter_drama</i>
+                    Getting Started
+                </div>
+                <div class="collapsible-body">
+                    <span>
+                        <p>
+                            Launch DI, and select your active field in the "Areas" tab.
+                        </p>
+                        <p>
+                            If this is your first time running, you will have a empty database and only one "Global" area.
 
-            <li>
-                <h5>Areas, names and categories</h5>
-                <p>
-                    When your retrieve a find, you catalog it. Cataloging is achieved by entering the fe, co, depth, name,
-                    category and search area into the "Detect" view, and pressing "record".
-                </p>
-                <p>
-                    the "name" field is the fully fledged name of the object. e.g "2/3 skillning 1836".
-                    the "category" field is the object filter as used by the AI, e.g. "bronze coin". Try not use more than 10
-                    categories for a field, examples of categories are:
-                    <ul>
-                        <li>silver coin</li>
-                        <li>bronze coin</li>
-                        <li>picnic trash</li>
-                        <li>small copper coin</li>
-                        <li>small CuNi coin</li>
+                            Areas are registered when you catalog a find, and name the "new" area in the "Search Area" field.
 
-                    </ul>
-                </p>
-
-                <p>
-                    The name, category and search area boxes will autocomplete once you have something in the database.
-                </p>
-
-                <p>
-                    Try not to categorize objects with wildly different FE/CO numbers together, since this casts a wider
-                    net when the algorithm is solving a find. For instance, make the distinctions between
-                    "large copper coin" and "small copper coin".
-                </p>
+                            With a empty database, you probably want to "record" that name:iron and category:iron is at 35:50
+                            ( etrac ) at a detected depth of ±10cm or half of your detectable depth. If you have a
+                            different metal detector, use the FE:CO:Depth that your detector detects iron at.
+                        </p>
+                        <p>
+                            Initially the database is completely untrained, so its completely up to you to populate it with the results
+                            of digs. You will want to dig some trash to confirm is trash, and "record" that into the DB.
+                        </p>
+                    </span>
+                </div>
             </li>
 
 
             <li>
-                <h5>Guessing</h5>
-                <p>
-                    Once you have some data in the system, you can start to use the "guess" button. The database takes a while to
-                    be fully sentient, so continue to dig/catalog finds.
-
-                </p>
-                <img class="responsive-img" src="/static/img/guessing.png">
-
+                <div class="collapsible-header">
+                    <i class="material-icons">filter_drama</i>
+                    Areas
+                </div>
+                <div class="collapsible-body">
+                    <span>
+                        <p>
+                            "Area" is the name of the place or plot you are digging, and want to train the AI to. To create a
+                            Area, you simply populate the "Search Area" input field, and "record" any find. It is recommended to
+                            record "iron" and its corresponding FE:CO for your detector, at a depth of half your max detectable
+                            depth.
+                        </p>
+                    </span>
+                </div>
             </li>
 
-           <li>
-                <h5>Retraining / Field Selection</h5>
-                <p>
-                    Before you resume searching a site, remember to select your search area from the "Areas" tab, and clicking
-                    "retrain"
-                </p>
+
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">filter_drama</i>
+                    Name
+                </div>
+                <div class="collapsible-body">
+                    <span>
+                        <p>
+                             Name is the fully qualified identity of the find. Its actually not used yet by the algorithms. But could
+                    be in future. e.g. "10kr 1970"
+                        </p>
+                    </span>
+                </div>
             </li>
 
             <li>
-                <h5>Record Management</h5>
-                <p>
+                <div class="collapsible-header">
+                    <i class="material-icons">filter_drama</i>
+                    Categories and the AI
+                </div>
+                <div class="collapsible-body">
+                    <span>
+                        <p>
+                            Categories are the meat of the algorithm. When you categorize a find, try keeping "ballpark" similar
+                            objects together, in about 10 categories. For example:
+                            <ul>
+                                <li>picnic trash</li>
+                                <li>silver coin</li>
+                                <li>bronze coin</li>
+                                <li>small copper coin</li>
+                                <li>large copper coin</li>
+                                <li>coppernickel coin</li>
+                                <li>iron</li>
+                            </ul>
+                        </p>
+                    </span>
+                </div>
+            </li>
+
+
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">filter_drama</i>
+                    Guessing
+                </div>
+                <div class="collapsible-body">
+                    <span>
+                        <p>
+                    Once you have some data in the DB, you can start to use the "guess" button. The database becomes more
+                    accurate as you continue to catalog finds.
+
+                </p>
+                    <img class="responsive-img" src="/static/img/guessing.png">
+                    </span>
+                </div>
+            </li>
+
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">filter_drama</i>
+                    Retraining the AI
+                </div>
+                <div class="collapsible-body">
+                    <span>
+                        <p>
+                            When starting the app, switch to the "Area" tab and select your active search area.
+
+                          Everytime you "record" a find, the AI is retrained, and further refined.
+                        </p>
+                    </span>
+                </div>
+            </li>
+
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">filter_drama</i>
+                    Database Management
+                </div>
+                <div class="collapsible-body">
+                    <span>
+                        <p>
                     You can delete records from the "record" view.
                 </p>
+                    </span>
+                </div>
             </li>
 
         </ul>
@@ -515,10 +585,6 @@
                     <li class="collection-header"><h5>Results</h5></li>
                     <li class="collection-item"></li>
                 </ul>
-            </div>
-
-            <div class="row">
-                <a class="waves-effect waves-light btn col s12 blue" id="retrain">Retrain</a>
             </div>
 
 
