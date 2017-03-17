@@ -300,6 +300,9 @@
                     Materialize.toast(data['result'], 4000);
                     vbutton=null;
                     updateAutoCompleters();
+                    document.getElementById("modalheader").innerHTML="AI Retrain";
+                    document.getElementById("modalview").innerHTML=data['result'];
+                    $('#modal1').modal('open');
                 });
 
 
