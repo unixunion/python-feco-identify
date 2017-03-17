@@ -199,6 +199,7 @@ def fields():
 def fieldlist():
     print("Getting fields")
     fl = []
+    fl.append("All Fields")
     try:
         list_fields = query_db('Select DISTINCT fieldid from feco WHERE userid IS "%s"' % session['username'])
         print("List of fields: %s" % list_fields)
@@ -293,8 +294,8 @@ def root():
                 try:
                     # notnull("field", data['field'])
                     retrain_session(data['field'])
-                    if not data['field']:
-                        return '{"result": "retrained for all field"}'
+                    if not data['field'] or data['field'] == u'All Fields':
+                        return '{"result": "retrained for All Fields"}'
                     else:
                         return '{"result": "retrained for field: %s" }' % data['field']
                 except Exception, e:
@@ -356,7 +357,7 @@ def retrain_session(field):
     print(type(field))
     with app.app_context():
         dbdata = []
-        if field is u'':
+        if field is u'' or field == u'All Fields':
             print("No Field, loading all datasets")
             dbdata = query_db("SELECT fe, co, depth, id, category from feco WHERE userid IS '%s'" % session['username'])
         else:
