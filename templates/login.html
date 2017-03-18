@@ -76,7 +76,7 @@ $(document).ready(function() {
                 'url': url,
                 'contentType': 'application/json',
                 'data': JSON.stringify({
-                    "username": document.getElementById("username").value,
+                    "username": document.getElementById("username").value.toLowerCase(),
                     "password": document.getElementById("password").value
                 }),
                 'dataType': 'json',
