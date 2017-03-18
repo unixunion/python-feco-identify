@@ -15,11 +15,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Deblox Intelligence</title>
 
-<!--Import jQuery before materialize.js-->
-<script type="text/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
-<script type="text/javascript" src="/static/js/materialize.min.js"></script>
+    <!--Import jQuery before materialize.js-->
+    <script type="text/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="/static/js/materialize.min.js"></script>
 
-<script type="text/javascript">
+    <script type="text/javascript">
     $(document).ready(function() {
 
         $('select').material_select();
@@ -213,12 +213,24 @@
             vbutton='record';
             postJSON("", function(data, status){
                 console.log(data);
-                Materialize.toast(data['result'], 4000);
+                <!--Materialize.toast(data['result'], 4000);-->
                 vbutton=null;
                 updateAutoCompleters();
-                document.getElementById("modalheader").innerHTML="AI Record";
-                document.getElementById("modalview").innerHTML=data['result'];
-                $('#modal1').modal('open');
+
+                if (data["result"] == "ok") {
+
+                <!--document.getElementById("modalheader").innerHTML="Record a find";-->
+                <!--document.getElementById("modalview").innerHTML=data['result'];-->
+
+                <!--var imagecap = document.createElement("input");-->
+                <!--imagecap.type="file"-->
+                <!--imagecap.accept="image/*";-->
+                <!--document.getElementById("modalview").appendChild(imagecap);-->
+
+                    $('#recordmodal').modal('open');
+                } else {
+                    Materialize.toast(data['result'], 4000);
+                }
             });
 
         }, false);
@@ -350,6 +362,27 @@
 
      $('.modal').modal()
 
+     document.getElementById("camerainput").addEventListener("change", function(data, status){
+        var formData = new FormData();
+        formData.append("file", data.target.files[0]);
+        var request = new XMLHttpRequest();
+        request.open("POST", "/upload");
+
+        request.send(formData);
+        <!--console.log(request.response);-->
+     });
+
+     <!--// set the modal to oncomplete redirect-->
+     <!--$('#recordmodal').modal(-->
+         <!--{-->
+            <!--complete: function() {-->
+                <!--var file = myInput.files[0];-->
+                <!---->
+                <!--alert("completed");-->
+            <!--}-->
+         <!--}-->
+     <!--);-->
+
 
 
     });
@@ -420,38 +453,56 @@
                 <div class="collapsible-body">
                     <span>
                         <p>
-                            Launch DI, and select your active field in the "Areas" tab.
+                            Launch DI, login, and select your active search area in the <i class="material-icons">location_on</i> view.
                         </p>
                         <p>
-                            If this is your first time running, you will have a empty database and only one "Global" area.
+                            If this is your first time running, you will have a empty database and only one "All Fields" area.
 
-                            Areas are registered when you catalog a find, and name the "new" area in the "Search Area" field.
+                            The Search Area's are registered as you catalog finds, and name the "new" area in the "Search Area" field.
 
-                            With a empty database, you probably want to "record" that name:iron and category:iron is at 35:50
-                            ( etrac ) at a detected depth of ±10cm or half of your detectable depth. If you have a
-                            different metal detector, use the FE:CO:Depth that your detector detects iron at.
+                            With an empty database, you probably want to "record" that name:iron in category:iron is at 35:50
+                            (etrac) at a detected depth of ±10cm or half of your detector's max depth. If you have a
+                            different metal detector, use the Ferrous:Conductivity:Depth that your detector detects iron at.
                         </p>
                         <p>
-                            Initially the database is completely untrained, so its completely up to you to populate it with the results
-                            of digs. You will want to dig some trash to confirm is trash, and "record" that into the DB.
+                            Since initially the database is empty, the AI is untrained, so its up to you to record finds,
+                            so the AI can get up to speed. You will want to dig some trash to confirm is trash, and "record"
+                            even the trash into the DB, as "picnic trash" or whatever category suits your needs.
+                        </p>
+                    </span>
+                </div>
+            </li>
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">launch</i>
+                    Fullscreen Mode
+                </div>
+                <div class="collapsible-body">
+                    <span>
+                        <p>
+                            After you have logged in, you can create a "Home Screen" shortcut in order to access the app in
+                            via its fullscreen mode.
                         </p>
                     </span>
                 </div>
             </li>
 
-
             <li>
                 <div class="collapsible-header">
-                    <i class="material-icons">filter_drama</i>
-                    Areas
+                    <i class="material-icons">location_on</i>
+                    Search Areas
                 </div>
                 <div class="collapsible-body">
                     <span>
                         <p>
-                            "Area" is the name of the place or plot you are digging, and want to train the AI to. To create a
-                            Area, you simply populate the "Search Area" input field, and "record" any find. It is recommended to
-                            record "iron" and its corresponding FE:CO for your detector, at a depth of half your max detectable
-                            depth.
+                            "Search Area" is a name given the place or plot you are searching, and want to train the AI to. To create a
+                            "Search Area", you only need to type the name in the "Search Area" input field, and "record" any find.
+                            It is recommended to record "iron" and its corresponding FE:CO for your detector, at a depth of half
+                            your max detectable depth.
+                        </p>
+                        <p>
+                            Once a new area is has "records", it becomes available in the Search Area autocomplete field,
+                            and in the <i class="material-icons">location_on</i> view:
                         </p>
                     </span>
                 </div>
@@ -550,16 +601,29 @@
 </div>
 
 
-  <!-- Modal Structure -->
-  <div id="modal1" class="modal">
+<!-- Modal Structure -->
+<div id="modal1" class="modal">
     <div class="modal-content">
-      <h4 id="modalheader"></h4>
-      <p id="modalview">Unknown</p>
+        <h4 id="modalheader"></h4>
+        <p id="modalview">Unknown</p>
     </div>
     <div class="modal-footer">
-      <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Dismiss</a>
+        <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Dismiss</a>
     </div>
-  </div>
+</div>
+
+<!-- Modal Structure -->
+<div id="recordmodal" class="modal">
+    <div class="modal-content">
+        <h4>Record a Find</h4>
+        <p>
+            <input type="file" capture="camera" accept="image/*" id="camerainput" name="camerainput">
+        </p>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">OK</a>
+    </div>
+</div>
 
 
 <div id="ai" class="col s12">

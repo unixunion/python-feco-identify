@@ -6,9 +6,14 @@ from logging.handlers import RotatingFileHandler
 import os
 import numpy as np
 from flask import Flask, request, send_from_directory, g, redirect, session, render_template
+import uuid
+from flask import url_for
 from flask_mail import Mail, Message
 import time
 import random
+
+from werkzeug.utils import secure_filename
+
 from ai import Matrix
 
 DATABASE = 'database.db'
@@ -20,6 +25,8 @@ ai_sessions = {}
 # set the project root directory as the static folder, you can set others.
 app = Flask(__name__, static_url_path='')
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
 app.config.update(
     DEBUG=True,
@@ -28,9 +35,12 @@ app.config.update(
     MAIL_PORT=465,
     MAIL_USE_SSL=True,
     MAIL_USERNAME=os.environ['GUN'],
-    MAIL_PASSWORD=os.environ['GPW']
+    MAIL_PASSWORD=os.environ['GPW'],
+    UPLOAD_FOLDER=UPLOAD_FOLDER
 )
 mail = Mail(app)
+
+
 
 
 # Custom logging
@@ -117,7 +127,6 @@ def logout():
     app.logger.info("successfully logged out")
     return redirect("/login")
 
-
 def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
@@ -130,7 +139,6 @@ def check_auth(username, password):
         return True
     else:
         return False
-
 
 # new user registration
 @app.route('/register', methods=['GET', 'POST'])
@@ -220,6 +228,30 @@ def activateuser(hash):
         app.logger.info("error")
         return redirect("/")
 
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route("/upload", methods=["POST"])
+def upload():
+    if request.method=="POST":
+        app.logger.debug("upload request")
+        if 'file' not in request.files:
+            return json.dumps({"result": "no file"})
+        else:
+            file = request.files['file']
+            if file.filename == '':
+                return json.dumps({"result": "no file name"})
+            if file and allowed_file(file.filename):
+                filename = secure_filename(session["username"] +"-"+ str(uuid.uuid1()) + "-" + file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                # return redirect(url_for('uploaded_file',
+                #                         filename=filename))
+                return json.dumps({"result": url_for('uploaded_file', filename=filename)})
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.before_first_request
 def setup_logging():
@@ -385,7 +417,7 @@ def root():
                     except Exception, e:
                         return '{"result": "error: %s}' % e
                     retrain_session(data['field'])
-                    return '{"result": "accepted and retrained"}'
+                    return '{"result": "ok"}'
                 except Exception, e:
                     return '{"result": "error, %s" }' % e.message
             elif (data['button'] == 'guess'):
