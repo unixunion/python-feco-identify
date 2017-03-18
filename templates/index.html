@@ -323,7 +323,9 @@
                     document.getElementById("modalheader").innerHTML="AI Retrain";
                     document.getElementById("modalview").innerHTML=data['result'];
                     $('#modal1').modal('open');
-                    document.getElementById('field').value = '';
+                    if (record == "All Fields") {
+                        document.getElementById('field').value = '';
+                    }
                 });
 
 
