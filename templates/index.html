@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!--Import Google Icon Font-->
-    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <!--Import materialize.css-->
     <link type="text/css" rel="stylesheet" href="/static/css/materialize.css"  media="screen,projection"/>
@@ -16,7 +16,7 @@
     <title>Deblox Intelligence</title>
 
 <!--Import jQuery before materialize.js-->
-<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
 <script type="text/javascript" src="/static/js/materialize.min.js"></script>
 
 <script type="text/javascript">
@@ -32,12 +32,22 @@
         var vcategory;
         var vbutton;
         var fielddata;
-
+        var coords;
         var finds = [];
 
         // autocomplete data holders
         var iddata;
         var categorydata;
+
+
+        // GPS init
+        if (navigator.geolocation) {
+            console.log("getting location");
+            navigator.geolocation.getCurrentPosition(setPosition, errorHandler);
+        } else {
+            console.log("no geolocation");
+            document.getElementById("locationicon").innerHTML=location_off;
+        }
 
         // POST for the form contents and which button is pressed
         var postJSON = function(url, callback) {
@@ -52,6 +62,8 @@
                     "id": document.getElementById("id").value,
                     "category": document.getElementById("category").value,
                     "field": document.getElementById('field').value,
+                    "latitude": coords.latitude,
+                    "longitude": coords.longitude,
                     "button": vbutton
                 }),
                 'dataType': 'json',
@@ -101,9 +113,30 @@
         // populate the autocompleters
         updateAutoCompleters();
 
+
+        function setPosition(position) {
+            console.log("Latitude: " + position.coords.latitude + " Longitude: " + position.coords.longitude);
+            coords = position.coords;
+
+        }
+        function errorHandler(error) {
+            Materialize.toast("GPS data not available", 2000);
+            document.getElementById("locationicon").innerHTML="location_off";
+        }
+
+
         // click listener for the guess button
         document.getElementById("guess").addEventListener("click", function(data) {
             console.log("guess");
+
+            if (navigator.geolocation) {
+                console.log("getting location");
+                navigator.geolocation.getCurrentPosition(setPosition, errorHandler);
+            } else {
+                console.log("no geolocation");
+                document.getElementById("locationicon").innerHTML=location_off;
+            }
+
             vbutton='guess';
             postJSON("", function(data, status){
                 console.log(data);
@@ -190,21 +223,6 @@
 
         }, false);
 
-        <!--// retrain button listener-->
-        <!--document.getElementById("retrain").addEventListener("click", function(data) {-->
-            <!--console.log("retrain");-->
-            <!--vbutton='retrain';-->
-
-            <!--postJSON("", function(data, status){-->
-                <!--console.log(data);-->
-                <!--Materialize.toast(data['result'], 4000);-->
-                <!--vbutton=null;-->
-                <!--updateAutoCompleters();-->
-
-            <!--});-->
-
-        <!--}, false);-->
-
 
         // calls a url and passes results to a function
         var show_contents = function(url, callback) {
@@ -274,8 +292,10 @@
             listitem.appendChild(span);
 
             var coordinates = document.createElement('p');
-            coordinates.innerHTML = "FE:" + record[1] + " CO:" + record[2] + " @ depth:" + record[3] + "<BR>location:" + record[6];
+            coordinates.innerHTML = "FE:" + record[1] + " CO:" + record[2] + " @ depth:" + record[3] + "<BR>location:" + record[6] + " <BR>GPS:" + record[7] + ":" + record[8];
             listitem.appendChild(coordinates);
+
+
 
             return listitem;
         };
@@ -344,7 +364,7 @@
         <ul class="tabs tabs-transparent">
             <li class="tab"><a class="active" href="#ai"><i class="material-icons">my_location</i></a></li>
             <li class="tab" id="dbtab"><a href="#database"><i class="material-icons">view_list</i></a></li>
-            <li class="tab" id="fieldtab"><a href="#database"><i class="material-icons">location_on</i></a></li>
+            <li class="tab" id="fieldtab"><a href="#database"><i id="locationicon"  class="material-icons">location_on</i></a></li>
             <li class="tab" id="helptab"><a href="#help"><i class="material-icons">live_help</i></a></li>
             <li class="tab" id="logouttab2"><a href="#logout"><i class="material-icons">perm_identity</i></a></li>
         </ul>

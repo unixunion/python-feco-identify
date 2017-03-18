@@ -5,13 +5,10 @@ import hashlib
 from logging.handlers import RotatingFileHandler
 import os
 import numpy as np
-from flask import Flask, request, send_from_directory, g, redirect, session, jsonify, render_template
-
+from flask import Flask, request, send_from_directory, g, redirect, session, render_template
 from flask_mail import Mail, Message
 import time
-
 import random
-
 from ai import Matrix
 
 DATABASE = 'database.db'
@@ -259,7 +256,7 @@ def dbdump():
     app.logger.info("dbdump request")
     try:
         dbdata = query_db(
-            "SELECT rowid, fe, co, depth, id, category, fieldid from feco WHERE userid IS '%s' ORDER BY rowid DESC" %
+            "SELECT rowid, fe, co, depth, id, category, fieldid, latitude, longitude from feco WHERE userid IS '%s' ORDER BY rowid DESC" %
             session['username'])
         app.logger.info("dumping database contents")
         app.logger.info(dbdata)
@@ -384,7 +381,7 @@ def root():
                     app.logger.info("Recording findings: %s" % data)
                     try:
                         insert(data['fe'], data['co'], data['depth'], data['id'], data['category'], session['username'],
-                               data['field'])
+                               data['field'], data['latitude'], data['longitude'])
                     except Exception, e:
                         return '{"result": "error: %s}' % e
                     retrain_session(data['field'])
@@ -445,11 +442,11 @@ def root():
 
 
 # write a find to the db
-def insert(fe, co, depth, id, category, userid, field):
+def insert(fe, co, depth, id, category, userid, field, latitude, longitude):
     with app.app_context():
         # g.db is the database connection
-        query = 'INSERT INTO feco (fe, co, depth, id, category, userid, fieldid) VALUES (%s, %s, %s,"%s", "%s", "%s", "%s")' % (
-            fe, co, depth, id, category, userid, field)
+        query = 'INSERT INTO feco (fe, co, depth, id, category, userid, fieldid, latitude, longitude) VALUES (%s, %s, %s,"%s", "%s", "%s", "%s", %s, %s)' % (
+            fe, co, depth, id, category, userid, field, latitude, longitude)
         cur = get_db().execute(query)
         # cur.execute(query, values)
         get_db().commit()
@@ -554,4 +551,4 @@ if __name__ == "__main__":
         print("Users table already created: %s" % e.message)
 
     # retrain()
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, ssl_context=('server.key.crt', 'server.key.key'))

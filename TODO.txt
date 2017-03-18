@@ -1,15 +1,18 @@
 ** Bug Fixes / Improvements **
 
-Lost Password recovery
-Registration Email Activation
 3d plot of AI grid
 
 
 ** Features **
 
+Log GPS coordinates with guesses and "records"
+When a guess is "recorded", consider it a transition
+
 
 
 ** Implemented **
+Lost Password recovery
+Registration Email Activation
 
 If Depth is ommited, do a dual feature matrix instead of tri feature.
 Update autocomplete(s) when a new object is recorded.
