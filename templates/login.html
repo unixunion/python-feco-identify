@@ -66,6 +66,7 @@
 <script type="text/javascript">
 $(document).ready(function() {
 
+
         $('.modal').modal();
 
         // POST for the form contents and which button is pressed
@@ -130,8 +131,8 @@ $(document).ready(function() {
                     $('#modal1').modal('open');
                 }
             }, function(data, status) {
-                document.getElementById("modalheader").innerHTML="Auth Error"
-                document.getElementById("modalbody").innerHTML="Server computer says NOooooo.."
+                document.getElementById("modalheader").innerHTML="Error"
+                document.getElementById("modalbody").innerHTML="Account not found"
                 $('#modal1').modal('open');
             });
         }, false);
