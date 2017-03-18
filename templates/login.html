@@ -17,6 +17,17 @@
 
 <body>
 
+<!-- Modal Structure -->
+  <div id="modal1" class="modal">
+    <div class="modal-content">
+      <h4 id="modalheader">Modal Header</h4>
+      <p id="modalbody">A bunch of text</p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Dismiss</a>
+    </div>
+  </div>
+
 <div class="row">
     <form class="col s12">
 
@@ -55,10 +66,10 @@
 <script type="text/javascript">
 $(document).ready(function() {
 
-
+        $('.modal').modal();
 
         // POST for the form contents and which button is pressed
-        var loginFunction = function(url, callback) {
+        var loginFunction = function(url, callback, errorcallback) {
             return jQuery.ajax({
                 'type': 'POST',
                 'url': url,
@@ -68,22 +79,36 @@ $(document).ready(function() {
                     "password": document.getElementById("password").value
                 }),
                 'dataType': 'json',
-                'success': callback
+                'success': callback,
+                error: function (xhr, ajaxOptions, thrownError) {
+                    <!--alert(xhr.status);-->
+                    <!--alert(thrownError);-->
+                    errorcallback()
+                }
             });
         }
 
-        // record a find button listener
+        // LOGIN button listener
         document.getElementById("submit").addEventListener("click", function(data) {
             console.log("submit");
             loginFunction("/login", function(data, status){
                 console.log(data['result']);
                 if (data['result']=="ok") {
                     window.location="/";
+                } else {
+                    <!--alert("Error: " + data['result']);-->
+                    document.getElementById("modalheader").innerHTML="Auth Error"
+                    document.getElementById("modalbody").innerHTML=data['result']
+                    $('#modal1').modal('open');
                 }
+            }, function(data, status) {
+                document.getElementById("modalheader").innerHTML="Auth Error"
+                document.getElementById("modalbody").innerHTML="Server computer says NOooooo.."
+                $('#modal1').modal('open');
             });
         }, false);
 
-        // record a find button listener
+        // REGISTER button listener
         document.getElementById("register").addEventListener("click", function(data) {
             console.log("register");
             window.location="/register";
@@ -96,10 +121,18 @@ $(document).ready(function() {
             loginFunction("/lostpass", function(data, status){
                 console.log(data['result']);
                 if (data['result']=="ok") {
-                    alert("Check your email for instructions.");
+                    document.getElementById("modalheader").innerHTML="Success"
+                    document.getElementById("modalbody").innerHTML="Check your email for further instructions."
+                    $('#modal1').modal('open');
                 } else {
-                    alert("Server Error");
+                    document.getElementById("modalheader").innerHTML="Error"
+                    document.getElementById("modalbody").innerHTML="Server comptuer says NOooooo."
+                    $('#modal1').modal('open');
                 }
+            }, function(data, status) {
+                document.getElementById("modalheader").innerHTML="Auth Error"
+                document.getElementById("modalbody").innerHTML="Server computer says NOooooo.."
+                $('#modal1').modal('open');
             });
         }, false);
 

@@ -6,6 +6,7 @@ from logging.handlers import RotatingFileHandler
 import os
 import numpy as np
 from flask import Flask, request, send_from_directory, g, redirect, session, jsonify, render_template
+
 from flask_mail import Mail, Message
 import time
 
@@ -74,23 +75,27 @@ def login():
     :return: login page, or result of login
     """
     if request.method == 'POST':
-        data = request.get_json(force=True)
-        app.logger.info("user login request with data: %s" % data)
-        if check_auth(data['username'], data['password']):
-            app.logger.info("%s, login success" % data['username'])
-            session['username'] = data['username']
-            ai_sessions["%s-ai" % session['username']] = Matrix(l=3, max_features=3)
-            ai_sessions["%s-ai2" % session['username']] = Matrix(l=3, max_features=2)
-            try:
-                retrain_session(u'')
-            except Exception, e:
-                return '{"result": "ok"}'
-            return '{"result": "ok"}'
-        else:
-            app.logger.error("error logging in with data: %s" % data)
-            return '{"result": "error"}'
+        try:
+            data = request.get_json(force=True)
+            app.logger.info("user login request with data: %s" % data)
+            if check_auth(data['username'], data['password']):
+                app.logger.info("%s, login success" % data['username'])
+                session['username'] = data['username']
+                ai_sessions["%s-ai" % session['username']] = Matrix(l=3, max_features=3)
+                ai_sessions["%s-ai2" % session['username']] = Matrix(l=3, max_features=2)
+                try:
+                    retrain_session(u'')
+                except Exception, e:
+                    return '{"result": "ok"}', 200
+                return '{"result": "ok"}', 200
+            else:
+                app.logger.error("error logging in with data: %s" % data)
+                return '{"result": "Authentication Failure"}', 401
+        except Exception, e:
+            app.logger.error("error: %s" % e)
+            return '{"result": "Server Error"}', 500
     else:
-        app.logger.info("returning login page")
+        app.logger.debug("get request, returning login page")
         return render_template('login.html')
 
 
@@ -141,7 +146,7 @@ def register():
             try:
                 notnull("token", data["token"])
                 commit_db("UPDATE users SET password = '%s' WHERE emailhash='%s'" % (hashlib.sha224(data['password']).hexdigest(), data["token"]))
-                return '{"result": "reset"}'
+                return '{"result": "reset"}', 200
 
             except Exception, e:
 
@@ -154,10 +159,10 @@ def register():
                 get_db().commit()
                 app.logger.info("user specifics: %s" % data)
                 activationemail(data['username'], token)
-                return '{"result": "ok"}'
+                return '{"result": "ok"}', 200
         except Exception, e:
             app.logger.error("error registering user, %s" % e.message)
-            return '{"result": "error"}'
+            return '{"result": "error"}', 401
     else:
         # return send_from_directory('static', 'register.html')
         return render_template('register.html')
@@ -175,11 +180,11 @@ def lostpass():
             commit_db("UPDATE users SET emailhash = '%s' WHERE email='%s'" % (token, data["username"]))
             app.logger.info("token updated for username %s" % data["username"])
             lostpasswordemail(data["username"], token)
-            return '{"result": "ok"}'
+            return '{"result": "ok"}', 200
 
         except Exception, e:
             app.logger.error("error initiating password recovery for data: %s, error was: %s" % (data, e.message))
-            return '{"result": "error"}'
+            return '{"result": "error"}', 500
 
 
 @app.route("/passwordreset/<string:token>", methods=['GET'])

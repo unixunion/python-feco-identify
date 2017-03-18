@@ -18,6 +18,17 @@
 
 <body>
 
+<!-- Modal Structure -->
+  <div id="modal1" class="modal">
+    <div class="modal-content">
+      <h4 id="modalheader">Modal Header</h4>
+      <p id="modalbody">A bunch of text</p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Dismiss</a>
+    </div>
+  </div>
+
 <div class="row">
     <form id="registerform" class="col s12">
 
@@ -66,58 +77,98 @@
 <script type="text/javascript">
 $(document).ready(function() {
 
-        // POST for the form contents and which button is pressed
-        var loginFunction = function(url, callback) {
+    $('.modal').modal();
 
-            if (document.getElementById("username").validity.typeMismatch) {
-                console.log("Bad email");
-                return;
-            } else if (document.getElementById("password").value == document.getElementById("password2").value) {
-                return jQuery.ajax({
-                    'type': 'POST',
-                    'url': url,
-                    'contentType': 'application/json',
-                    'data': JSON.stringify({
-                        "username": document.getElementById("username").value,
-                        "password": document.getElementById("password").value,
-                        "token": document.getElementById("token").value
-                    }),
-                    'dataType': 'json',
-                    'success': callback
-                });
-            } else {
-                console.log("Password missmatch");
-                alert("Password Missmatch");
-            }
-        }
+    // POST for the form contents and which button is pressed
+    var loginFunction = function(url, callback, errorcallback) {
 
-
-        // on enter in the password field, login
-        document.getElementById("password")
-            .addEventListener("keyup", function(event) {
-            event.preventDefault();
-            if (event.keyCode == 13) {
-                document.getElementById("submit").click();
-            }
+        if (document.getElementById("username").validity.typeMismatch) {
+            console.log("Bad email");
+            document.getElementById("modalheader").innerHTML="Error"
+            document.getElementById("modalbody").innerHTML="Invalid Email"
+            $('#modal1').modal('open');
+        return;
+    } else if (document.getElementById("password").value == document.getElementById("password2").value) {
+        return jQuery.ajax({
+            'type': 'POST',
+            'url': url,
+            'contentType': 'application/json',
+            'data': JSON.stringify({
+                "username": document.getElementById("username").value,
+                "password": document.getElementById("password").value,
+                "token": document.getElementById("token").value
+            }),
+            'dataType': 'json',
+            'success': callback,
+             error: function (xhr, ajaxOptions, thrownError) {
+                    <!--alert(xhr.status);-->
+                    <!--alert(thrownError);-->
+                    errorcallback()
+             }
         });
+    } else {
+        console.log("Password missmatch");
+        document.getElementById("modalheader").innerHTML="Password Missmatch"
+        document.getElementById("modalbody").innerHTML="Please try again"
+        $('#modal1').modal('open');
+    }
+}
 
 
-        // record a find button listener
-        document.getElementById("submit").addEventListener("click", function(data) {
-            console.log("submit");
-            loginFunction("/register", function(data, status){
-                console.log(data['result']);
-                if (data['result']=="ok") {
-                    alert("Please check your email");
-                    window.location="/login";
-                } else if (data['result']=="reset") {
-                    alert("Password reset");
-                    window.location="/login";
-                } else {
-                    alert("An error occured");
+// on enter in the password field, login
+document.getElementById("password")
+    .addEventListener("keyup", function(event) {
+    event.preventDefault();
+    if (event.keyCode == 13) {
+        document.getElementById("submit").click();
+    }
+});
+
+
+// record a find button listener
+document.getElementById("submit").addEventListener("click", function(data) {
+    console.log("submit");
+    loginFunction("/register", function(data, status){
+        console.log(data['result']);
+        if (data['result']=="ok") {
+
+            // set the modal to oncomplete redirect
+            $('.modal').modal(
+                {
+                    complete: function() { window.location="/login"; }
                 }
-            });
-        }, false);
+            );
+
+            document.getElementById("modalheader").innerHTML="Success"
+            document.getElementById("modalbody").innerHTML="Please check your email for activation instructions"
+            $('#modal1').modal('open');
+
+        } else if (data['result']=="reset") {
+
+            // set the modal to oncomplete redirect
+            $('.modal').modal(
+                {
+                    complete: function() { window.location="/login"; }
+                }
+            );
+
+            document.getElementById("modalheader").innerHTML="Success"
+            document.getElementById("modalbody").innerHTML="Please check your email for instructions"
+            $('#modal1').modal('open');
+
+        } else {
+            document.getElementById("modalheader").innerHTML="Error"
+            document.getElementById("modalbody").innerHTML="Server Computer says NOoooo...."
+            $('#modal1').modal('open');
+        }
+    }, function(data, status) {
+        document.getElementById("modalheader").innerHTML="Error"
+        document.getElementById("modalbody").innerHTML="Registration Failed"
+        $('#modal1').modal('open');
+    }
+
+    );
+}, false);
 
 
 });
