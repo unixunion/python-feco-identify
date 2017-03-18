@@ -287,7 +287,6 @@
             listitem = document.createElement('li')
 	        listitem.setAttribute('class', 'collection-item avatar');
 
-
             var button = document.createElement('a');
             button.innerHTML='<i class="material-icons">track_changes</i>';
             button.setAttribute('class', 'waves-effect waves-light btn col s4 blue right');
@@ -299,12 +298,12 @@
                 vbutton="retrain";
                 postJSON("", function(data, status){
                     console.log(data);
-                    <!--Materialize.toast(data['result'], 4000);-->
                     vbutton=null;
                     updateAutoCompleters();
                     document.getElementById("modalheader").innerHTML="AI Retrain";
                     document.getElementById("modalview").innerHTML=data['result'];
                     $('#modal1').modal('open');
+                    document.getElementById('field').value = '';
                 });
 
 
