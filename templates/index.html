@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!--Import Google Icon Font-->
-    <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <!--Import materialize.css-->
     <link type="text/css" rel="stylesheet" href="/static/css/materialize.css"  media="screen,projection"/>
@@ -366,22 +366,16 @@
         var formData = new FormData();
         formData.append("file", data.target.files[0]);
         var request = new XMLHttpRequest();
+        request.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+              console.log(this);
+              $('#camerapreview').attr('src', this.responseURL);
+            }
+         };
         request.open("POST", "/upload");
-
         request.send(formData);
         <!--console.log(request.response);-->
      });
-
-     <!--// set the modal to oncomplete redirect-->
-     <!--$('#recordmodal').modal(-->
-         <!--{-->
-            <!--complete: function() {-->
-                <!--var file = myInput.files[0];-->
-                <!---->
-                <!--alert("completed");-->
-            <!--}-->
-         <!--}-->
-     <!--);-->
 
 
 
@@ -616,9 +610,21 @@
 <div id="recordmodal" class="modal">
     <div class="modal-content">
         <h4>Record a Find</h4>
-        <p>
-            <input type="file" capture="camera" accept="image/*" id="camerainput" name="camerainput">
-        </p>
+        <span>
+            Optionally add a picture of your find!
+        </span>
+
+        <div class="row col s12 file-field input-field">
+          <div class="btn blue">
+            <span>Camera</span>
+            <input type="file" capture="camera" accept="image/*;capture=camera" id="camerainput" name="camerainput">
+          </div>
+        </div>
+
+        <div class="row col s12">
+            <img id="camerapreview" class="responsive-img">
+        </div>
+
     </div>
     <div class="modal-footer">
         <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">OK</a>
