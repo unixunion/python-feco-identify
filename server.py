@@ -117,6 +117,7 @@ def logout():
         app.logger.info("initiating logout: %s" % session['username'])
         ai_sessions.pop("%s-ai" % session['username'], None)
         ai_sessions.pop("%s-ai2" % session['username'], None)
+        session['username'] = None
     except Exception, e:
         app.logger.error("logout could not shutdown AI's, %s" % e.message)
 
