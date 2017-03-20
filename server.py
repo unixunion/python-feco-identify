@@ -87,7 +87,7 @@ def login():
             app.logger.info("user login request with data: %s" % data)
             if check_auth(data['username'], data['password']):
                 app.logger.info("%s, login success" % data['username'])
-                session['username'] = data['username']
+                session['username'] = data['username'].lower()
                 ai_sessions["%s-ai" % session['username']] = Matrix(l=3, max_features=3)
                 ai_sessions["%s-ai2" % session['username']] = Matrix(l=3, max_features=2)
                 try:
@@ -412,8 +412,8 @@ def root():
                     notnull("field", data['field'])
                     app.logger.info("Recording findings: %s" % data)
                     try:
-                        insert(data['fe'], data['co'], data['depth'], data['id'], data['category'], session['username'],
-                               data['field'], data['latitude'], data['longitude'])
+                        insert(data['fe'], data['co'], data['depth'], data['id'], data['category'].lower(), session['username'],
+                               data['field'].lower(), data['latitude'], data['longitude'])
                     except Exception, e:
                         return '{"result": "error: %s}' % e
                     retrain_session(data['field'])
