@@ -22,6 +22,15 @@
     <script type="text/javascript">
     $(document).ready(function() {
 
+        function getCookie(c_name) {
+            return localStorage.getItem(c_name);
+        }
+
+        function setCookie(c_name, value, expiredays) {
+            return localStorage.setItem(c_name, value);
+        }
+
+
         $('select').material_select();
 
         // vars
@@ -33,7 +42,13 @@
         var vbutton;
         var fielddata;
         var coords;
+        var latitude;
+        var longitude;
         var finds = [];
+
+        var activefield;
+
+
 
         // autocomplete data holders
         var iddata;
@@ -62,8 +77,8 @@
                     "id": document.getElementById("id").value,
                     "category": document.getElementById("category").value,
                     "field": document.getElementById('field').value,
-                    "latitude": coords.latitude,
-                    "longitude": coords.longitude,
+                    "latitude": latitude,
+                    "longitude": longitude,
                     "button": vbutton
                 }),
                 'dataType': 'json',
@@ -117,7 +132,8 @@
         function setPosition(position) {
             console.log("Latitude: " + position.coords.latitude + " Longitude: " + position.coords.longitude);
             coords = position.coords;
-
+            latitude = position.coords.latitude;
+            longitude = position.coords.longitude;
         }
         function errorHandler(error) {
             Materialize.toast("GPS data not available", 2000);
@@ -311,6 +327,30 @@
             return listitem;
         };
 
+
+        var retrainFunction = function(record, callback) {
+            console.log("retraining for " + record);
+            document.getElementById('field').value = record;
+
+            //fields retrain
+            vbutton="retrain";
+            postJSON("", function(data, status){
+                console.log(data);
+                vbutton=null;
+                updateAutoCompleters();
+
+                if (record == "All Fields") {
+                    document.getElementById('field').value = '';
+                } else {
+                    setCookie("field", record);
+                }
+
+                callback(data);
+
+            });
+        };
+
+
         var new_field_record_view = function(record) {
 
             console.log("field view record: " + record);
@@ -322,23 +362,11 @@
             button.innerHTML='<i class="material-icons">track_changes</i>';
             button.setAttribute('class', 'waves-effect waves-light btn col s4 blue right');
             button.addEventListener("click", function(data){
-
-            document.getElementById('field').value = record;
-
-                //fields retrain
-                vbutton="retrain";
-                postJSON("", function(data, status){
-                    console.log(data);
-                    vbutton=null;
-                    updateAutoCompleters();
+                data = retrainFunction(record, function(data) {
                     document.getElementById("modalheader").innerHTML="AI Retrain";
                     document.getElementById("modalview").innerHTML=data['result'];
                     $('#modal1').modal('open');
-                    if (record == "All Fields") {
-                        document.getElementById('field').value = '';
-                    }
                 });
-
 
             });
             listitem.appendChild(button);
@@ -376,7 +404,10 @@
         <!--console.log(request.response);-->
      });
 
-
+    if (null == activefield) {
+        activefield = getCookie("field");
+        retrainFunction(activefield, function(){});
+    }
 
     });
     </script>
