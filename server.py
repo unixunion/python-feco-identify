@@ -412,7 +412,7 @@ def root():
                     notnull("field", data['field'])
                     app.logger.info("Recording findings: %s" % data)
                     try:
-                        insert(data['fe'], data['co'], data['depth'], data['id'], data['category'].lower(), session['username'],
+                        insert(data['fe'], data['co'], data['depth'], data['id'].lower(), data['category'].lower(), session['username'],
                                data['field'].lower(), data['latitude'], data['longitude'])
                     except Exception, e:
                         return '{"result": "error: %s}' % e
