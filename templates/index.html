@@ -304,10 +304,9 @@
             listitem.appendChild(span);
 
             var coordinates = document.createElement('p');
-            coordinates.innerHTML = "FE:" + record[1] + " CO:" + record[2] + " @ depth:" + record[3] + "<BR>location:" + record[6] + " <BR>GPS:" + record[7] + ":" + record[8];
+            <!--coordinates.innerHTML = "FE:" + record[1] + " CO:" + record[2] + " @ depth:" + record[3] + "<BR>location:" + record[6] + " <BR>GPS: <a href='https://www.google.com/maps/preview/@" + record[7] + "," + record[8] + ",20z'>" + record[7] + ":" + record[8] + "</a>";-->
+            coordinates.innerHTML = "FE:" + record[1] + " CO:" + record[2] + " @ depth:" + record[3] + "<BR>location:" + record[6] + " <BR>GPS: <a href='https://www.google.com/maps?&q=" + record[7] + "," + record[8] + "&z=20'>" + record[7] + ":" + record[8] + "</a>";
             listitem.appendChild(coordinates);
-
-
 
             return listitem;
         };
