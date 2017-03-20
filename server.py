@@ -5,6 +5,7 @@ import hashlib
 from logging.handlers import RotatingFileHandler
 import os
 import numpy as np
+from datetime import timedelta
 from flask import Flask, request, send_from_directory, g, redirect, session, render_template
 import uuid
 from flask import url_for
@@ -262,6 +263,12 @@ def setup_logging():
     else:
         app.logger.addHandler(logging.StreamHandler())
         app.logger.setLevel(logging.INFO)
+
+
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
+    # app.permanent_session_lifetime = timedelta(minutes=360)
 
 
 def get_db():
