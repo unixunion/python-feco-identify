@@ -17,7 +17,7 @@
     <!--<link href="static/img/launch.png" media="(device-width: 375px) and (device-height: 667px) and (orientation: portrait) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image">-->
 
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Deblox Intelligence</title>
+    <title>Deblox AI</title>
 
     <!--Import jQuery before materialize.js-->
     <script type="text/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -336,7 +336,6 @@
             console.log("retraining for " + record);
             document.getElementById('field').value = record;
 
-            //fields retrain
             vbutton="retrain";
             postJSON("", function(data, status){
                 console.log(data);
@@ -345,9 +344,11 @@
 
                 if (record == "All Fields") {
                     document.getElementById('field').value = '';
+                    setCookie("field", '');
                 } else {
                     setCookie("field", record);
                 }
+
 
                 callback(data);
 
@@ -456,12 +457,12 @@
             <li>
                 <div class="collapsible-header">
                     <i class="material-icons">filter_drama</i>
-                    About Deblox Intelligence
+                    About Deblox AI
                 </div>
                 <div class="collapsible-body">
                     <span>
                     <p>
-                        Deblox Intelligence leverages simultaneous AI learning techniques to determine the identity of a object detected with
+                        Deblox AI leverages simultaneous AI learning techniques to determine the identity of a object detected with
                         your metal detector. The AI learns about the area you are searching, and learns to filter out trash from
                         treasure which share overlapping FE:CO values.
                     </p>
@@ -481,7 +482,7 @@
                 <div class="collapsible-body">
                     <span>
                         <p>
-                            Launch DI, login, and select your active search area in the <i class="material-icons">location_on</i> view.
+                            Launch Deblox AI, login, and select your active search area in the <i class="material-icons">location_on</i> view.
                         </p>
                         <p>
                             If this is your first time running, you will have a empty database and only one "All Fields" area.
