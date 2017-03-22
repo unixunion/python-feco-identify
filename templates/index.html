@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
     <link rel="apple-touch-icon" sizes="114x114" href="/static/img/icon-iphone4.png" />
-    
+
     <!--<link rel="apple-touch-startup-image" href="/static/img/launch.png">-->
     <!-- iPhone 6 -->
     <!--<link href="static/img/launch.png" media="(device-width: 375px) and (device-height: 667px) and (orientation: portrait) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image">-->
@@ -57,6 +57,15 @@
         // autocomplete data holders
         var iddata;
         var categorydata;
+
+
+        <!--var toggleLoader = function() {-->
+            <!--var e = document.getElementById("loading");-->
+            <!--if(e.style.display == 'block')-->
+              <!--e.style.display = 'none';-->
+            <!--else-->
+              <!--e.style.display = 'block';-->
+        <!--}-->
 
 
         // GPS init
@@ -166,8 +175,8 @@
                 for (x in data['result']) {
                     var j = JSON.parse(data['result'][x]);
                     findings = findings + j['result'];
-                    if (x<1) {
-                        findings = findings + " / "
+                    if (x<data['result'].length-1) {
+                        findings = findings + "<br>"
                     }
                 }
 
@@ -414,6 +423,8 @@
         retrainFunction(activefield, function(){});
     }
 
+    toggleLoader();
+
     });
     </script>
 
@@ -436,6 +447,11 @@
     </div>
 
 </nav>
+
+
+<!--<div id="loading" class="progress">-->
+    <!--<div class="indeterminate blue"></div>-->
+<!--</div>-->
 
 <div id="database" class="container">
     <div class="row">
@@ -650,10 +666,10 @@
         </span>
 
         <div class="row col s12 file-field input-field">
-          <div class="btn blue">
-            <span>Camera</span>
-            <input type="file" capture="camera" accept="image/*;capture=camera" id="camerainput" name="camerainput">
-          </div>
+            <div class="btn blue">
+                <span>Camera</span>
+                <input type="file" capture="camera" accept="image/*;capture=camera" id="camerainput" name="camerainput">
+            </div>
         </div>
 
         <div class="row col s12">

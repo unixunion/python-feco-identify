@@ -1,5 +1,12 @@
 import numpy as np
+from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.gaussian_process.kernels import RBF
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
 import datasets
@@ -11,7 +18,7 @@ class Matrix:
         print("L=%s" % l)
 
         self.max_features = max_features
-        self.names = ["Decision Tree", "Random Forest"]
+        self.names = ["NN", "SVCL", "SVC", "GP", "DT", "RF", "MLP", "ADA", "GNB"]
 
         self.COLORS = np.array(['#FF3333',  # red
                                 '#0198E1',  # blue
@@ -32,15 +39,15 @@ class Matrix:
                                 '#800000'
                                 ])
         self.classifiers = [
-            # KNeighborsClassifier(n_neighbors=3, weights='distance'),
-            # SVC(kernel="linear", C=0.025),
-            # SVC(gamma=1, C=1),
-            # GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
+            KNeighborsClassifier(n_neighbors=5, weights='distance'),
+            SVC(kernel="linear", C=0.025),
+            SVC(gamma=1, C=1),
+            GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
             DecisionTreeClassifier(max_depth=5, max_features=max_features),
             RandomForestClassifier(max_depth=5, n_estimators=10, max_features=max_features),
-            # MLPClassifier(alpha=1),
-            # AdaBoostClassifier(),
-            # GaussianNB()
+            MLPClassifier(alpha=1),
+            AdaBoostClassifier(),
+            GaussianNB()
         ]
 
         # place to hold the compiled classifiers grouped with their names

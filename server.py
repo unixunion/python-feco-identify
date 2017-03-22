@@ -440,25 +440,34 @@ def root():
 
                     if data['depth']:
                         for name, clf in ai_sessions["%s-ai" % session['username']].compiled_classifiers:
-                            app.logger.info("Depth set, so 3 feature testing")
-                            appr = {"classifier": name,
-                                    "result": ai_sessions["%s-ai" % session['username']].mydata.target_data[
-                                        clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[
-                                            0]]
-                                    }
-                            results.append(json.dumps(appr))
+                            try:
+                                app.logger.info("Depth set, so 3 feature testing")
+                                appr = {"classifier": name,
+                                        "result": ai_sessions["%s-ai" % session['username']].mydata.target_data[
+                                            clf.predict(np.array([data['fe'], data['co'], data['depth']]).reshape(1, -1))[
+                                                0]] + " - " + name
+                                        }
+                                results.append(json.dumps(appr))
+                            except Exception, e:
+                                app.logger.warn("Error in classifier: %s" % name)
+                                results.append(json.dumps({"classifier": name, "result": "error - %s" % name}))
                     else:
                         for name, clf in ai_sessions["%s-ai2" % session['username']].compiled_classifiers:
-                            app.logger.info("2 feature testing")
-                            appr = {"classifier": name,
-                                    "result": ai_sessions["%s-ai2" % session['username']].mydata.target_data[
-                                        clf.predict(np.array([data['fe'], data['co']]).reshape(1, -1))[0]]
-                                    }
-                            results.append(json.dumps(appr))
+                            try:
+                                app.logger.info("2 feature testing")
+                                appr = {"classifier": name,
+                                        "result": ai_sessions["%s-ai2" % session['username']].mydata.target_data[
+                                            clf.predict(np.array([data['fe'], data['co']]).reshape(1, -1))[0]] + " - " + name
+                                        }
+                                results.append(json.dumps(appr))
+                            except Exception, e:
+                                app.logger.warn("Error in classifier: %s" % name)
+                                results.append(json.dumps({"classifier": name, "result": "error - %s" % name}))
+
                     app.logger.info(results)
                     return '{"result": %s }' % json.dumps(results)
                 except Exception, e:
-                    app.logger.info("fe/co not set")
+                    app.logger.info("ERROR or fe/co not set")
                     results.append(json.dumps({"result": "%s" % e.message}))
                     return '{"result": %s }' % json.dumps(results)
             elif data['button'] == 'retrain':
